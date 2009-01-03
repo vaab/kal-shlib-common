@@ -1,0 +1,21 @@
+
+#
+# Used by scripts to create deb package
+#
+
+deb_version="2"
+deb_arch="all"
+
+deb_small_desc="Bourne Again Shell Librairies for common tasks"
+deb_long_desc="Common functions of general purpose"
+
+deb_depends="bash (>= 2.05a-11), awk, sed (>= 3.02-8), grep (>= 2.4.2-3),
+  coreutils (>= 5.0-5), kal-shlib-core (>= 0.2.0)"
+
+deb_conflicts="kal-shlib-other (<= 0.2.1-1)"
+
+
+## deb automatic variables :
+
+deb_maintainer="$author_name <$author_email>"
+

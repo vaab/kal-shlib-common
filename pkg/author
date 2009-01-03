@@ -1,0 +1,9 @@
+
+#
+# Author info (used by configure.in and debian scripts)
+#
+
+author_name="Valentin Lab"
+author_email="valentin.lab@kalysto.org"
+
+

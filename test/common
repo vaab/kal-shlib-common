@@ -1,0 +1,110 @@
+#!/bin/bash
+
+##
+## You can launch these test by calling:
+##
+##     pkg_path="../src" TESTNAME
+##
+## ``pkg_path`` is the path to the source/prefix directory which
+## contains lib to test.
+##
+
+exname=$(basename $0)
+
+if test -z "$pkg_path"; then
+    echo "You can launch these test by calling:"
+    echo
+    echo '    pkg_path="../src" '$0
+    echo
+    echo -n "'pkg_path' is the path to the source/prefix directory which "
+    echo "contains lib to test."
+    exit 0
+fi
+
+
+src_file="$pkg_path"/lib/libcommon.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+export pkg_path src_file
+[ "$DEBUG" ] && echo "Loading testlib..."
+if ! . ./libtest ; then
+   echo 'libtest failed to load.'
+   exit 1
+fi
+
+export COLUMNS=50
+
+
+test_pid_file="$tmp_dir/test.$$pid.tmp"
+rm -f "$test_pid_file"
+
+
+##
+## print_bytes
+##
+
+try "print_bytes 1"
+noerror
+is out "1 byte"
+
+
+try "print_bytes 0"
+noerror
+is out "0 byte"
+
+
+try "print_bytes 1023"
+noerror
+is out "1023 bytes"
+
+
+try "print_bytes 1024"
+noerror
+is out "1.00 KiB"
+
+
+try "print_bytes 1536"
+noerror
+is out "1.50 KiB"
+
+
+try "print_bytes 1792"
+noerror
+is out "1.75 KiB"
+
+
+try "print_bytes 1793"
+noerror
+is out "1.75 KiB"
+
+
+try "print_bytes 2000000"
+noerror
+is out "1.91 MiB"
+
+
+try "print_bytes 2000000000"
+noerror
+is out "1.86 GiB"
+
+
+try "print_bytes 2000000000000"
+noerror
+is out "1.82 TiB"
+
+try "print_bytes 2000000000000000000"
+noerror
+is out "1776.36 PiB"
+
+
+## compatibility with old API
+try "print_octets 1024"
+noerror
+is out "1.00 KiB"
+
+summary

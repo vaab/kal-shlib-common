@@ -1,0 +1,59 @@
+#!/bin/bash
+
+src_file="$pkg_path"/lib/liblock.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+export pkg_path src_file
+[ "$DEBUG" ] && echo "Loading testlib..."
+if ! . ./libtest ; then
+   echo 'libtest failed to load.'
+   exit 1
+fi
+
+export COLUMNS=50
+
+
+test_pid_file="$tmp_dir/test.$$pid.tmp"
+rm -f "$test_pid_file"
+
+
+##
+## PID LOCKS
+##
+
+# working in normal case
+try "pid_lock_get $test_pid_file && pid_lock_release $test_pid_file"
+noerror
+is out ""
+
+
+# if somebody takes the lock before:
+try "pid_lock_get $test_pid_file ; pid_lock_get $test_pid_file"
+is err reg "$test_pid_file"  ## mention at least the file name in it.
+is errlvl 1
+is out ""
+
+
+# somebody tries to remove the lock he does not owns
+try "pid_lock_release $test_pid_file"
+is err reg "$test_pid_file"  ## mention at least the file name in it.
+is err reg "own"             ## mention the word own
+is err reg "not allowed"     ## mention "not allowed"
+is errlvl 1
+is out ""
+
+rm -f "$test_pid_file"
+
+# somebody tries to remove a lock that is not set
+try "pid_lock_release $test_pid_file"
+is err reg "$test_pid_file"  ## mention least the file name in it.
+is err reg "$test_pid_file"  ## mention not set.
+is errlvl 1
+is out ""
+
+summary

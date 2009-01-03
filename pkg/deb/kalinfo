@@ -1,0 +1,7 @@
+#
+# Used by scripts to send in the correct location in repository
+#
+
+kal_maturity=$pkg_maturity       # can be "alpha", "beta", "main"
+kal_target_system="no-dist"  # can be "edgy" or "no-dist"
+

@@ -1,0 +1,161 @@
+
+
+exname="$(basename $0)"
+[ "$DEBUG" ] && echo "PKG_PATH: '$pkg_path'"
+[ "$DEBUG" ] && echo "SRC_FILE: '$src_file'"
+
+if test -z "$pkg_path"; then
+    echo "please set \$pkg_path to src lib"
+    return 1
+fi
+
+if ! test -d "$pkg_path"; then
+    echo "'$pkg_path' not set, please set \$pkg_path to src lib"
+    return 1
+fi
+
+if ! test -e "$src_file"; then
+    echo "did not find $src_file..."
+    echo "please set \$pkg_path to src lib"
+    return 1
+fi
+
+function out() {
+    cat "$tmp_out"
+}
+
+function err() {
+    cat "$tmp_err"
+}
+
+function errlvl() {
+    cat "$tmp_errlvl"
+}
+
+function var() {
+    echo ${$1}
+}
+
+
+function time_note() {
+    echo "scale=1 ; l($1 - $empty_try_time) / l(10)" | bc -l 
+}
+
+function swallow_last_time() {
+    if test "$sum_time" == "0" -a -z "$cmd"; then ## catches first empty try ''
+	empty_try_time="$(echo "scale=0 ; $time_diff / 2" | bc -l )"
+	return 0
+    fi
+    test -z "$test_counter" && test_counter=0 || test_counter=$[$test_counter + 1]
+    test -z "$sum_time" && sum_time=0
+    test_name=${exname}_${test_counter}
+    if test "$time_diff"; then
+	test_time_note=$(time_note $time_diff)
+	profiler_info="$(echo -en "$profiler_info\n- $test_name\t$test_time_note")"
+	sum_time=$(echo "scale=3; $sum_time + $time_diff" | bc -l )
+    fi
+
+}
+
+function time_exec() {
+    beg_exec=$(date +%s.%N)
+    ( echo "$*" | bash )
+    errorlevel=$?
+    end_exec=$(date +%s.%N)
+    time_diff="$(echo "scale=3; ($end_exec - $beg_exec)*1000000" | bc | cut -f 1 -d ".")"
+    return $errorlevel
+}
+
+
+function try() {
+    swallow_last_time
+    cmd="$*"
+    desc=$(echo ; echo "$ $cmd" )
+    time_exec "$prefix_cmd$cmd"  1> "$tmp_out" 2> "$tmp_err"
+    echo $? > "$tmp_errlvl"
+}
+
+function apply_opt() {
+    code=$(cat -)
+    for opt in $*; do
+	code=$(echo "$code" | $opt)
+    done
+    echo "$code"
+}
+
+function NOCOLOR() {
+    esc_char=$(echo -en "\e")
+    cat - | sed -r "s/$esc_char\[[0-9]+(;[0-9]+)*m//g"
+}
+
+function NOPOS() {
+    esc_char=$(echo -en "\e\\[[0-9]\\+[GA]")
+    cat - | sed "s/$esc_char//g"
+}
+
+function TRIM() {
+    cat - | sed -r "s/^ +//g" | sed -r "s/ +\$//g"
+}
+
+function SIZE() {
+    cat - | wc -c
+}
+
+function is() {
+    test -z "$total" && total=0
+    act="$1"
+    shift
+
+    if test "$1" == "reg"; then
+	type=reg
+	shift
+    else
+	type=
+    fi
+
+    code="$1"
+    shift
+    #code=$(echo "$code" | apply_opt $*)
+    msg=$(echo "$type $code" | cut -c -30)
+
+    output=$($act | apply_opt $*)
+    case "$type" in
+	("")
+	test "$code" == "$output"
+	;;
+	("reg")
+	echo -n "$output" | egrep "$code" >/dev/null 2>&1
+	;;
+    esac && total=$[$total + 1] &&
+    echo "[v] is $act $msg" >/dev/null && return 0
+    echo "$desc"
+    echo "[ ] is $act $msg"
+    echo "--- $*"
+    echo -n "$output"
+    echo
+    echo "---"
+    exit 1
+
+}
+
+function summary() {
+    swallow_last_time
+
+    echo "$profiler_info"
+    echo
+    echo "$total tests conducted in $(echo "scale=3;$sum_time/1000000" | bc) s ($(time_note $sum_time))"
+}
+function noerror() {
+    is err ''
+    is errlvl 0
+}
+
+pid=$$
+tmp_dir="/tmp"
+tmp_out="$tmp_dir/test.$pid.out.tmp"
+tmp_err="$tmp_dir/test.$pid.err.tmp"
+tmp_errlvl="$tmp_dir/test.$pid.errlvl.tmp"
+
+try ''
+try ''
+try ''
