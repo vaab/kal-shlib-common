@@ -3,7 +3,7 @@
 # Used by scripts to create deb package
 #
 
-deb_version="2"
+deb_version="1"
 deb_arch="all"
 
 deb_small_desc="Bourne Again Shell Librairies for common tasks"
