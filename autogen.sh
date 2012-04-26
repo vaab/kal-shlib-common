@@ -177,5 +177,5 @@ if [ -f configure.ac -o -f configure.in ]; then
 
     touch NEWS AUTHORS ChangeLog
 
-    autoreconf
+    autoreconf -i
 fi
