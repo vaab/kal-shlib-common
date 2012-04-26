@@ -32,10 +32,10 @@ A debian package repository is available at::
   deb http://deb.kalysto.org no-dist kal-alpha
 
 you should include this repository to your apt system and then::
-  
+
   apt-get update && apt-get install kal-shlib-common
 
-What are dependencies for this pacakge ?
+What are dependencies for this package ?
 ----------------------------------------
 
 You will need to install::
@@ -45,8 +45,8 @@ You will need to install::
 before using this package. Note that if you choose the debian package
 installation, dependencies will be installed automatically.
 
-What does contain this package ?
----------------------------------
+What do this package contains ?
+-------------------------------
 
 Libraries which are files called ``lib*.sh`` installed in
 ``$prefix/lib/shlib/``
