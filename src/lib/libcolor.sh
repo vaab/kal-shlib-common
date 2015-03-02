@@ -92,6 +92,10 @@ function ansi_color()
 	GRAY=$(echo -en "\e[1;30m")
 	WHITE=$(echo -en "\e[1;37m")
 
+
+    DARKGREEN=$(echo -en "\e[0;32m")
+    DARKYELLOW=$(echo -en "\e[0;33m")
+
     CYAN=$(echo -en "\e[1;36m")
     PINK=$(echo -en "\e[1;35m")
 
@@ -120,6 +124,9 @@ function ansi_color()
 	BLUE=
 	GRAY=
 	WHITE=
+
+    DARKGREEN=
+    DARKYELLOW=
 
 	SUCCESS=
 	WARNING=
