@@ -17,16 +17,16 @@ if [ -z "$COLUMNS" ]; then
     stty size > /dev/null 2>&1
     if [ "$?" == 0 ]
     then
-	[ "$CONSOLE" == "/dev/console" ] && SIZE=$(stty size < $CONSOLE) \
-                                         || SIZE=$(stty size)
+        [ "$CONSOLE" == "/dev/console" ] && SIZE=$(stty size < $CONSOLE) \
+            || SIZE=$(stty size)
 
         ## Strip off the rows leaving the columns
 
         COLUMNS=${SIZE#*\ }
-	LINES=${SIZE%\ *}
+        LINES=${SIZE%\ *}
     else
-	COLUMNS=80
-	LINES=24
+        COLUMNS=80
+        LINES=24
     fi
 
 fi
@@ -49,15 +49,15 @@ SIZE_STATUS=8                                 ## status info size in chars
 SIZE_LIST=3                                   ## status info size in chars
 SIZE_CHAR=1                                   ## status char info size
 SIZE_ELT=$[$SIZE_LINE - 1
-     - $SIZE_INFO
-     - $SIZE_STATUS
-     - $SIZE_LIST
-     - $SIZE_CHAR
-     - $SEP_LIST_ELT_SIZE
-     - $SEP_ELT_INFO_SIZE
-     - $SEP_INFO_STATUS_SIZE
-     - $SEP_STATUS_CHAR_SIZE
-                            ]                 ## elt info size in chars
+    - $SIZE_INFO
+    - $SIZE_STATUS
+    - $SIZE_LIST
+    - $SIZE_CHAR
+    - $SEP_LIST_ELT_SIZE
+    - $SEP_ELT_INFO_SIZE
+    - $SEP_INFO_STATUS_SIZE
+    - $SEP_STATUS_CHAR_SIZE
+]                 ## elt info size in chars
 
 COL_CHAR=$[$COLUMNS - 1 - $SIZE_CHAR]
 COL_STATUS=$[$COL_CHAR - $SEP_STATUS_CHAR_SIZE - $SIZE_STATUS]
@@ -69,74 +69,75 @@ function ansi_color()
 {
     if [ "$1" != "no" ]; then
 
-	SET_COL_CHAR=$(echo -en "\e[${COL_CHAR}G")
-	SET_COL_STATUS=$(echo -en "\e[${COL_STATUS}G")
-	SET_COL_INFO=$(echo -en "\e[${COL_INFO}G")
-	SET_COL_ELT=$(echo -en "\e[${COL_ELT}G")
+        SET_COL_CHAR=$(echo -en "\e[${COL_CHAR}G")
+        SET_COL_STATUS=$(echo -en "\e[${COL_STATUS}G")
+        SET_COL_INFO=$(echo -en "\e[${COL_INFO}G")
+        SET_COL_ELT=$(echo -en "\e[${COL_ELT}G")
 
-	SET_BEGINCOL=$(echo -en "\e[0G")
+        SET_BEGINCOL=$(echo -en "\e[0G")
 
-	UP=$(echo -en "\e[1A")
-	DOWN=$(echo -en "\e[1B")
-	LEFT=$(echo -en "\e[1D")
-	RIGHT=$(echo -en "\e[1C")
+        UP=$(echo -en "\e[1A")
+        DOWN=$(echo -en "\e[1B")
+        LEFT=$(echo -en "\e[1D")
+        RIGHT=$(echo -en "\e[1C")
 
-	SAVE=$(echo -en "\e7")
-	RESTORE=$(echo -en "\e8")
+        SAVE=$(echo -en "\e7")
+        RESTORE=$(echo -en "\e8")
 
-	NORMAL=$(echo -en "\e[0m")
-	RED=$(echo -en "\e[1;31m")
-	GREEN=$(echo -en "\e[1;32m")
-	YELLOW=$(echo -en "\e[1;33m")
-	BLUE=$(echo -en "\e[1;34m")
-	GRAY=$(echo -en "\e[1;30m")
-	WHITE=$(echo -en "\e[1;37m")
+        NORMAL=$(echo -en "\e[0m")
+        RED=$(echo -en "\e[1;31m")
+        GREEN=$(echo -en "\e[1;32m")
+        YELLOW=$(echo -en "\e[1;33m")
+        BLUE=$(echo -en "\e[1;34m")
+        GRAY=$(echo -en "\e[1;30m")
+        WHITE=$(echo -en "\e[1;37m")
 
 
-    DARKGREEN=$(echo -en "\e[0;32m")
-    DARKYELLOW=$(echo -en "\e[0;33m")
+        DARKGREEN=$(echo -en "\e[0;32m")
+        DARKYELLOW=$(echo -en "\e[0;33m")
 
-    CYAN=$(echo -en "\e[1;36m")
-    PINK=$(echo -en "\e[1;35m")
+        CYAN=$(echo -en "\e[1;36m")
+        PINK=$(echo -en "\e[1;35m")
 
-	SUCCESS=$GREEN
-	WARNING=$YELLOW
-	FAILURE=$RED
-	NOOP=$BLUE
-	ON=$SUCCESS
-	OFF=$FAILURE
-	ERROR=$FAILURE
+        SUCCESS=$GREEN
+        WARNING=$YELLOW
+        FAILURE=$RED
+        NOOP=$BLUE
+        ON=$SUCCESS
+        OFF=$FAILURE
+        ERROR=$FAILURE
 
-	ansi_color="yes"
+        ansi_color="yes"
+
     else
 
-	SET_COL_CHAR=
-	SET_COL_STATUS=
-	SET_COL_INFO=
-	SET_COL_ELT=
+        SET_COL_CHAR=
+        SET_COL_STATUS=
+        SET_COL_INFO=
+        SET_COL_ELT=
 
-	SET_BEGINCOL=
+        SET_BEGINCOL=
 
-	NORMAL=
-	RED=
-	GREEN=
-	YELLOW=
-	BLUE=
-	GRAY=
-	WHITE=
+        NORMAL=
+        RED=
+        GREEN=
+        YELLOW=
+        BLUE=
+        GRAY=
+        WHITE=
 
-    DARKGREEN=
-    DARKYELLOW=
+        DARKGREEN=
+        DARKYELLOW=
 
-	SUCCESS=
-	WARNING=
-	FAILURE=
-	NOOP=
-	ON=
-	OFF=
-	ERROR=
+        SUCCESS=
+        WARNING=
+        FAILURE=
+        NOOP=
+        ON=
+        OFF=
+        ERROR=
 
-	ansi_color="no"
+        ansi_color="no"
 
     fi
 
