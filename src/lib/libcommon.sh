@@ -2,6 +2,14 @@
 
 include color
 
+warn() { echo -en "${YELLOW}Warning:$NORMAL" "$*\n" >&2 ; }
+info() { echo -en "${BLUE}II$NORMAL" "$*\n" >&2 ; }
+verb() { [ "$VERBOSE" ] && echo -en "$*\n" >&2 ; }
+debug() { [ "$DEBUG" ] && echo -en "$*\n" >&2 ; }
+err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
+die() { err "$@" ; exit 1; }
+
+
 function gnu_options() {
     local i
 
