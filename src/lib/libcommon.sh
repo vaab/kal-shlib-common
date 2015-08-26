@@ -477,4 +477,18 @@ prefix() {
     cat -  | sed_compat 's/^(.*)$/'"$*"'\1/g'
 }
 
+
+## self destruct temp dir
+settmpdir() {
+    local varname="${1:-tmpdir}" var
+    var=${!varname}
+    [ "$var" ] && {
+        debug 'Use given $'"$varname"' variable ('"$var"')'
+        return 0
+    }
+    declare -g $varname=$(mktemp -d)
+    trap_add EXIT,INT "rm -rf '${!varname}' ; debug \"destructed tmp dir '${!varname}'.\""
+    debug "Temporary directory set up, variable \$$varname ready."
+}
+
 ## End libcommon.sh

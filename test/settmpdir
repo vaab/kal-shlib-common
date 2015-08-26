@@ -1,0 +1,109 @@
+#!/bin/bash
+
+##
+## You can launch these test by calling:
+##
+##     pkg_path="../src" TESTNAME
+##
+## ``pkg_path`` is the path to the source/prefix directory which
+## contains lib to test.
+##
+
+exname=$(basename $0)
+
+if test -z "$pkg_path"; then
+    echo "You can launch these test by calling:"
+    echo
+    echo '    pkg_path="../src" '$0
+    echo
+    echo -n "'pkg_path' is the path to the source/prefix directory which "
+    echo "contains lib to test."
+    exit 0
+fi
+
+
+src_file="$pkg_path"/lib/libcommon.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+export pkg_path src_file
+[ "$DEBUG" ] && echo "Loading testlib..."
+if ! . ./libtest ; then
+   echo 'libtest failed to load.'
+   exit 1
+fi
+
+export COLUMNS=50
+
+
+test_pid_file="$tmp_dir/test.$$pid.tmp"
+rm -f "$test_pid_file"
+
+
+##
+## settmpdir
+##
+
+## no args
+
+try "DEBUG=1; settmpdir; echo \$tmpdir"
+is err "Temporary directory set up, variable \$tmpdir ready.
+destructed tmp dir '$(out)'."
+is errlvl 0
+[ -d "$(out)" ] && { echo "dir $(out) should not exist anymore." ; exit 1; }
+
+
+try "settmpdir; [ -d \"\$tmpdir\" ] && echo 'found dir'"
+noerror
+is out "found dir"
+
+
+test_value_pid="uniq-$$"
+try "tmpdir=/tmp/test-$test_value_pid; mkdir -p \$tmpdir; settmpdir ; echo \$tmpdir"
+noerror
+is out "/tmp/test-$test_value_pid"
+[ -d "$(out)" ] || { echo "dir $(out) should still be there." ; exit 1; }
+rmdir "/tmp/test-$test_value_pid"
+
+
+test_value_pid="uniq-$$"
+try "DEBUG=1; tmpdir=/tmp/test-$test_value_pid; mkdir -p \$tmpdir; settmpdir ; echo \$tmpdir"
+is err "Use given \$tmpdir variable (/tmp/test-$test_value_pid)"
+is errlvl 0
+rmdir "/tmp/test-$test_value_pid"
+
+## with args
+
+
+try "DEBUG=1; settmpdir mytmpdir; echo \$mytmpdir"
+is err "Temporary directory set up, variable \$mytmpdir ready.
+destructed tmp dir '$(out)'."
+is errlvl 0
+[ -d "$(out)" ] && { echo "dir $(out) should not exist anymore." ; exit 1; }
+
+
+try "settmpdir mytmpdir; [ -d \"\$mytmpdir\" ] && echo 'found dir'"
+noerror
+is out "found dir"
+
+
+test_value_pid="uniq-$$-3"
+try "mytmpdir=/tmp/test-$test_value_pid; mkdir -p \$mytmpdir; settmpdir mytmpdir; echo \$mytmpdir"
+noerror
+is out "/tmp/test-$test_value_pid"
+[ -d "$(out)" ] || { echo "dir $(out) should still be there." ; exit 1; }
+rmdir "/tmp/test-$test_value_pid"
+
+
+test_value_pid="uniq-$$-4"
+try "DEBUG=1; mytmpdir=/tmp/test-$test_value_pid; mkdir -p \$mytmpdir; settmpdir mytmpdir; echo \$mytmpdir"
+is err "Use given \$mytmpdir variable (/tmp/test-$test_value_pid)"
+is errlvl 0
+rmdir "/tmp/test-$test_value_pid"
+
+
+summary
