@@ -1,0 +1,60 @@
+#!/bin/bash
+
+##
+## You can launch these test by calling:
+##
+##     pkg_path="../src" TESTNAME
+##
+## ``pkg_path`` is the path to the source/prefix directory which
+## contains lib to test.
+##
+
+exname=$(basename $0)
+
+if test -z "$pkg_path"; then
+    echo "You can launch these test by calling:"
+    echo
+    echo '    pkg_path="../src" '$0
+    echo
+    echo -n "'pkg_path' is the path to the source/prefix directory which "
+    echo "contains lib to test."
+    exit 0
+fi
+
+
+src_file="$pkg_path"/lib/libcommon.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+export pkg_path src_file
+[ "$DEBUG" ] && echo "Loading testlib..."
+if ! . ./libtest ; then
+   echo 'libtest failed to load.'
+   exit 1
+fi
+
+export COLUMNS=50
+
+
+test_pid_file="$tmp_dir/test.$$pid.tmp"
+rm -f "$test_pid_file"
+
+
+##
+## prefix
+##
+
+try "echo 'hello
+you' | prefix '> '"
+noerror
+is out "> hello
+> you"
+
+
+
+
+summary

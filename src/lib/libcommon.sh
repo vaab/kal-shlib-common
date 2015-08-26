@@ -464,5 +464,9 @@ trap_add() {
 }
 
 
+## prefixes every line from stdin with given command line
+prefix() {
+    cat -  | sed_compat 's/^(.*)$/'"$*"'\1/g'
+}
 
 ## End libcommon.sh
