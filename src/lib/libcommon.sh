@@ -382,7 +382,7 @@ function md5_compat() {
 }
 
 
-## BSD / GNU compatibile
+## BSD / GNU compatible
 function get_perm() {
     if test "$BSD_STAT"; then
 	"$stat" -f %OLp "$1"
