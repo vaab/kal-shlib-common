@@ -436,4 +436,33 @@ if ! is_set BSD_DF; then
     "$df" --version > /dev/null 2>&1 || BSD_DF=1
 fi
 
+
+
+## appends a command to the signal handler functions
+#
+# example: trap_add EXIT,INT close_ssh "$ip"
+trap_add() {
+    local sigs="$1" sig cmd old_cmd
+    shift || {
+        echo "${FUNCNAME} usage error" >&2
+        return 1
+    }
+    cmd="$@"
+    while IFS="," read -d "," sig; do
+        prev_cmd="$(trap -p "$sig")"
+        if [ "$prev_cmd" ]; then
+            new_cmd="${prev_cmd#trap -- \'}"
+            new_cmd="${new_cmd%\' "$sig"};$cmd"
+        else
+            new_cmd="$cmd"
+        fi
+        trap -- "$new_cmd" "$sig" || {
+            echo "unable to add command '$@' to trap $sig" >&2 ;
+            return 1
+        }
+    done < <(echo "$sigs,")
+}
+
+
+
 ## End libcommon.sh
