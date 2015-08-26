@@ -43,16 +43,16 @@ function time_note() {
 
 function swallow_last_time() {
     if test "$sum_time" == "0" -a -z "$cmd"; then ## catches first empty try ''
-	empty_try_time="$(echo "scale=0 ; $time_diff / 2" | bc -l )"
-	return 0
+        empty_try_time="$(echo "scale=0 ; $time_diff / 2" | bc -l )"
+        return 0
     fi
     test -z "$test_counter" && test_counter=0 || test_counter=$[$test_counter + 1]
     test -z "$sum_time" && sum_time=0
     test_name=${exname}_${test_counter}
     if test "$time_diff"; then
-	test_time_note=$(time_note $time_diff)
-	profiler_info="$(echo -en "$profiler_info\n- $test_name\t$test_time_note")"
-	sum_time=$(echo "scale=3; $sum_time + $time_diff" | bc -l )
+        test_time_note=$(time_note $time_diff)
+        profiler_info="$(echo -en "$profiler_info\n- $test_name\t$test_time_note")"
+        sum_time=$(echo "scale=3; $sum_time + $time_diff" | bc -l )
     fi
 
 }
@@ -78,7 +78,7 @@ function try() {
 function apply_opt() {
     code=$(cat -)
     for opt in $*; do
-	code=$(echo "$code" | $opt)
+        code=$(echo "$code" | $opt)
     done
     echo "$code"
 }
@@ -101,16 +101,18 @@ function SIZE() {
     cat - | wc -c
 }
 
-function is() {
+## usage:
+##   is ACTION [reg] CODE [OPTION ...]
+is() {
+    local act="$1" type code msg
     test -z "$total" && total=0
-    act="$1"
     shift
 
     if test "$1" == "reg"; then
-	type=reg
-	shift
+    type=reg
+        shift
     else
-	type=
+        type=
     fi
 
     code="$1"
@@ -120,12 +122,12 @@ function is() {
 
     output=$($act | apply_opt $*)
     case "$type" in
-	("")
-	test "$code" == "$output"
-	;;
-	("reg")
-	echo -n "$output" | egrep "$code" >/dev/null 2>&1
-	;;
+        ("")
+        test "$code" == "$output"
+        ;;
+        ("reg")
+        echo -n "$output" | egrep "$code" >/dev/null 2>&1
+        ;;
     esac && total=$[$total + 1] &&
     echo "[v] is $act $msg" >/dev/null && return 0
     echo "$desc"
@@ -133,7 +135,8 @@ function is() {
     echo "--- $*"
     echo -n "$output"
     echo
-    echo "---"
+    echo "--- DIFF"
+    diff -u <(echo "$code") <(echo "$output") | egrep -v '^(---|\+\+\+) /'
     exit 1
 
 }
