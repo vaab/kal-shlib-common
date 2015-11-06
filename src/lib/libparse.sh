@@ -32,6 +32,20 @@ function remove() {
 
 }
 
+## Check
+## https://vaab.blog.kal.fr/2015/01/03/bash-lore-how-to-properly-parse-nul-separated-fields/
+## for more info on parsing separated fields and the implementation of
+## this function.
+read-0() {
+    local eof
+    eof=
+    while [ "$1" ]; do
+        IFS='' read -r -d '' "$1" || eof=true
+        shift
+    done
+    test "$eof" != true
+}
+
 function is_uint () {  [[ "$1" =~ ^[0-9]+$ ]] ; }
 function is_int () {  [[ "$1" =~ ^-?[0-9]+$ ]] ; }
 function is_bash_int () {  [ "$1" -eq "$1" ] 2>/dev/null ; }
