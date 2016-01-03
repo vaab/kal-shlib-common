@@ -85,19 +85,23 @@ function ansi_color()
         RESTORE=$(echo -en "\e8")
 
         NORMAL=$(echo -en "\e[0m")
+
+        GRAY=$(echo -en "\e[1;30m")
         RED=$(echo -en "\e[1;31m")
         GREEN=$(echo -en "\e[1;32m")
         YELLOW=$(echo -en "\e[1;33m")
         BLUE=$(echo -en "\e[1;34m")
-        GRAY=$(echo -en "\e[1;30m")
+        PINK=$(echo -en "\e[1;35m")
+        CYAN=$(echo -en "\e[1;36m")
         WHITE=$(echo -en "\e[1;37m")
 
-
+        DARKGRAY=$(echo -en "\e[0;30m")
+        DARKRED=$(echo -en "\e[0;31m")
         DARKGREEN=$(echo -en "\e[0;32m")
         DARKYELLOW=$(echo -en "\e[0;33m")
-
-        CYAN=$(echo -en "\e[1;36m")
-        PINK=$(echo -en "\e[1;35m")
+        DARKBLUE=$(echo -en "\e[0;34m")
+        DARKPINK=$(echo -en "\e[0;35m")
+        DARKCYAN=$(echo -en "\e[0;36m")
 
         SUCCESS=$GREEN
         WARNING=$YELLOW
@@ -126,8 +130,13 @@ function ansi_color()
         GRAY=
         WHITE=
 
+        DARKGRAY=
+        DARKRED=
         DARKGREEN=
         DARKYELLOW=
+        DARKBLUE=
+        DARKPINK=
+        DARKCYAN=
 
         SUCCESS=
         WARNING=
