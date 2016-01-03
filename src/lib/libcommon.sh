@@ -14,14 +14,14 @@ gnu_options() {
     local i
 
     for i in $* ;do
-	if [ "$i"  = '--help' ]; then
-	    print_help
-	    exit 0
-	fi
-	if [ "$i"  = '--version' ]; then
-	    print_version
-	    exit 0
-	fi
+        if [ "$i"  = '--help' ]; then
+            print_help
+            exit 0
+        fi
+        if [ "$i"  = '--version' ]; then
+            print_version
+            exit 0
+        fi
     done
 }
 
@@ -44,7 +44,7 @@ print_exit() {
 
 
 print_syntax_error() {
-    [ "$*" ] ||	print_syntax_error "$FUNCNAME: no arguments"
+    [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments"
     print_exit "${ERROR}script error:${NORMAL} $@" >&2
 }
 
@@ -88,7 +88,7 @@ invert_list() {
 
     newlist=" "
     for i in $* ; do
-      newlist=" $i${newlist}"
+        newlist=" $i${newlist}"
     done
     echo $newlist
 }
@@ -99,14 +99,14 @@ get_path() {
 
     type="$(type -t "$1")"
     case $type in
-	("file")
-	    type -p "$1"
-	    return 0
-	    ;;
-	("function" | "builtin" )
-	    echo "$1"
-	    return 0
-	    ;;
+        ("file")
+            type -p "$1"
+            return 0
+            ;;
+        ("function" | "builtin" )
+            echo "$1"
+            return 0
+            ;;
     esac
     return 1
 }
@@ -120,22 +120,22 @@ depends() {
 
     __tr=$(get_path "tr")
     test "$__tr" ||
-	print_error "dependency check : couldn't find 'tr' command."
+        print_error "dependency check : couldn't find 'tr' command."
 
     for __i in $@ ; do
 
-      if ! __path=$(get_path $__i); then
-	  __new_name=$(echo $__i | "$__tr" '_' '-')
-	  if [ "$__new_name" != "$__i" ]; then
-	     depends "$__new_name"
-	  else
-	     print_error "dependency check : couldn't find '$__i' command."
-	  fi
-      else
-	  if ! test -z "$__path" ; then
-	      export "$(echo $__i | "$__tr" '-' '_')"=$__path
-	  fi
-      fi
+        if ! __path=$(get_path $__i); then
+            __new_name=$(echo $__i | "$__tr" '_' '-')
+            if [ "$__new_name" != "$__i" ]; then
+                depends "$__new_name"
+            else
+                print_error "dependency check : couldn't find '$__i' command."
+            fi
+        else
+            if ! test -z "$__path" ; then
+                export "$(echo $__i | "$__tr" '-' '_')"=$__path
+            fi
+        fi
 
     done
 }
@@ -147,24 +147,24 @@ require() {
 
     for i in $@; do
 
-      if ! path=$(get_path $i); then
-	   return 1;
-      else
-	  if ! test -z "$path"; then
-	      export $i=$path
-	  fi
-      fi
+        if ! path=$(get_path $i); then
+            return 1;
+        else
+            if ! test -z "$path"; then
+                export $i=$path
+            fi
+        fi
 
     done
 }
 
 
 check() {
-    for i in $@; do
-      [ "$(type -t "check_$i")" == "function" ] &&
-          "check_$i" && continue
+    for i in "$@"; do
+        [ "$(type -t "check_$i")" == "function" ] &&
+            "check_$i" && continue
 
-      print_error "dependency check : couldn't find 'check_$i' function."
+        print_error "dependency check : couldn't find 'check_$i' function."
     done
 }
 
@@ -177,7 +177,7 @@ check_ls_timestyle() {
     ##     -ls does accept the --time-style ?
 
     if ! "$ls" --time-style=+date:%Y%m%d%H%M.%S / >/dev/null 2>&1; then
-	print_error "'$ls' doesn't support the --time-style argument, please upgrade your coreutils tools."
+        print_error "'$ls' doesn't support the --time-style argument, please upgrade your coreutils tools."
     fi
 }
 
@@ -190,33 +190,33 @@ print_bytes () {
 
 
     (
-    export LC_ALL=C
+        export LC_ALL=C
 
-    bytes="$1"
-    [ "$bytes" == 0 -o "$bytes" == 1 ] && { printf "%s byte" $bytes; return 0;}
+        bytes="$1"
+        [ "$bytes" == 0 -o "$bytes" == 1 ] && { printf "%s byte" $bytes; return 0;}
 
-    [ "$(echo "$bytes < 1024" | "$bc" )" == "1" ] &&
-        { printf "%s bytes" $bytes; return 0;}
+        [ "$(echo "$bytes < 1024" | "$bc" )" == "1" ] &&
+            { printf "%s bytes" $bytes; return 0;}
 
-    kbytes="$(echo "$bytes / 1024" | bc )"
-    [ "$(echo "$kbytes < 1024" | bc)" == "1" ] &&
-        { printf "%.2f KiB" "$(echo "$bytes / 1024" | "$bc" -l)" ; return 0; }
+        kbytes="$(echo "$bytes / 1024" | bc )"
+        [ "$(echo "$kbytes < 1024" | bc)" == "1" ] &&
+            { printf "%.2f KiB" "$(echo "$bytes / 1024" | "$bc" -l)" ; return 0; }
 
-    mbytes="$(echo "$kbytes / 1024" | bc )"
-    [ "$(echo "$mbytes < 1024" | bc)" == "1" ] &&
-        { printf "%.2f MiB" "$(echo "$kbytes / 1024" | "$bc" -l)" ; return 0; }
+        mbytes="$(echo "$kbytes / 1024" | bc )"
+        [ "$(echo "$mbytes < 1024" | bc)" == "1" ] &&
+            { printf "%.2f MiB" "$(echo "$kbytes / 1024" | "$bc" -l)" ; return 0; }
 
-    gbytes="$(echo "$mbytes / 1024" | bc )"
-    [ "$(echo "$gbytes < 1024" | bc )" == "1" ] &&
-        { printf "%.2f GiB" "$(echo "$mbytes / 1024" | "$bc" -l)" ; return 0; }
+        gbytes="$(echo "$mbytes / 1024" | bc )"
+        [ "$(echo "$gbytes < 1024" | bc )" == "1" ] &&
+            { printf "%.2f GiB" "$(echo "$mbytes / 1024" | "$bc" -l)" ; return 0; }
 
-    tbytes="$(echo "$gbytes / 1024" | bc )"
-    [ "$(echo "$tbytes < 1024" | bc )" == "1" ] &&
-        { printf "%.2f TiB" "$(echo "$gbytes / 1024" | "$bc" -l)" ; return 0; }
+        tbytes="$(echo "$gbytes / 1024" | bc )"
+        [ "$(echo "$tbytes < 1024" | bc )" == "1" ] &&
+            { printf "%.2f TiB" "$(echo "$gbytes / 1024" | "$bc" -l)" ; return 0; }
 
 
-    pbytes="$(echo "$tbytes / 1024" | bc )"
-    printf "%.2f PiB" "$(echo "$tbytes / 1024" | "$bc" -l)"
+        pbytes="$(echo "$tbytes / 1024" | bc )"
+        printf "%.2f PiB" "$(echo "$tbytes / 1024" | "$bc" -l)"
     )
 }
 
@@ -231,10 +231,10 @@ is_set() {
     local i val
 
     for i in $*; do
-	val=$(eval echo -n \$$i)
-	if test -z "$val"; then
-	    print_error "Variable \$$i is not set."
-	fi
+        val=$(eval echo -n \$$i)
+        if test -z "$val"; then
+            print_error "Variable \$$i is not set."
+        fi
     done
     return 0
 }
@@ -248,58 +248,57 @@ checkfile () {
     separate=$(echo "$1" | sed_compat 's/(.)/ \1/g')
 
     for i in $(echo $1 | sed_compat 's/(.)/ \1/g'); do
-	case "$i" in
-		"")
-			:
-		;;
-                "e")
-                        if ! [ -e "$2" ]; then
-	                        echo "'$2' is not found."
-        	                return 1
-			fi;;
-		"f")
-			if ! [ -f "$2" ]; then
-				echo "'$2' is not a regular file."
-				return 1
-			fi;;
-		"d")
-			if ! [ -d "$2" ]; then
-				echo "'$2' is not a directory."
-				return 1
-			fi;;
-		"r")
-	                if ! [ -r "$2" ]; then
-	                        echo "'$2' is not readable."
-	                        return 1
-			fi;;
-                "w")
-			if ! [ -w "$2" ]; then
-	                        echo "'$2' is not writable."
-	                        return 1
-			fi;;
-                "x")
-                        if ! [ -x "$2" ]; then
-	                        echo "'$2' is not executable/openable."
-	                        return 1
-			fi;;
-		"l")
-			if ! [ -L "$2" ]; then
-				echo "'$2' is not a symbolic link."
-				return 1
-			fi;;
-	esac
+        case "$i" in
+            "")
+                :
+                ;;
+            "e")
+                if ! [ -e "$2" ]; then
+                    echo "'$2' is not found."
+                    return 1
+                fi;;
+            "f")
+                if ! [ -f "$2" ]; then
+                    echo "'$2' is not a regular file."
+                    return 1
+                fi;;
+            "d")
+                if ! [ -d "$2" ]; then
+                    echo "'$2' is not a directory."
+                    return 1
+                fi;;
+            "r")
+                if ! [ -r "$2" ]; then
+                    echo "'$2' is not readable."
+                    return 1
+                fi;;
+            "w")
+                if ! [ -w "$2" ]; then
+                    echo "'$2' is not writable."
+                    return 1
+                fi;;
+            "x")
+                if ! [ -x "$2" ]; then
+                    echo "'$2' is not executable/openable."
+                    return 1
+                fi;;
+            "l")
+                if ! [ -L "$2" ]; then
+                    echo "'$2' is not a symbolic link."
+                    return 1
+                fi;;
+        esac
     done
 
     return 0
-}
-
+    }
 
 
 matches() {
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$3" ] && print_syntax_error "$FUNCNAME: too much arguments."
 
-     echo "$1" | "$grep" "^$2\$" >/dev/null 2>&1
+    echo "$1" | "$grep" "^$2\$" >/dev/null 2>&1
 }
 
 
@@ -316,18 +315,18 @@ find_conf_file() {
     poss="/etc/$1 /usr/etc/$1 /usr/local/etc/$1 "
 
     for i in $poss ; do
-	n=$(eval echo "$i")
-	if [ -f "$n" -a -r "$n" ]; then
-	    echo "$n"
-	    return 0
-	fi
+        n=$(eval echo "$i")
+        if [ -f "$n" -a -r "$n" ]; then
+            echo "$n"
+            return 0
+        fi
     done
 
     ## return first choice
     for i in $poss ;do
-	n=$(eval echo "$i")
-	echo "$n"
-	return 1
+        n=$(eval echo "$i")
+        echo "$n"
+        return 1
     done
 }
 
@@ -360,8 +359,8 @@ sed_compat() {
 
     if test "$BSD_SED"; then
         ## BSD sed
-	"$cat" - | "$sed" -E "$1"
-	return 0
+        "$cat" - | "$sed" -E "$1"
+        return 0
     fi
 
     ## GNU sed
@@ -378,9 +377,9 @@ md5_compat() {
 
     if test "$BSD_MD5"; then
         ## BSD md5
-	depends md5
-	"$cat" - | "$md5"
-	return 0
+    depends md5
+    "$cat" - | "$md5"
+    return 0
     fi
 
     ## GNU md5
@@ -393,8 +392,8 @@ md5_compat() {
 ## BSD / GNU compatible
 get_perm() {
     if test "$BSD_STAT"; then
-	"$stat" -f %OLp "$1"
-	return 0
+        "$stat" -f %OLp "$1"
+        return 0
     fi
 
     "$stat" "$1" -c %a
@@ -443,7 +442,6 @@ fi
 if ! is_set BSD_DF; then
     "$df" --version > /dev/null 2>&1 || BSD_DF=1
 fi
-
 
 
 ## appends a command to the signal handler functions
