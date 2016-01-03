@@ -10,7 +10,7 @@ err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
 die() { err "$@" ; exit 1; }
 
 
-function gnu_options() {
+gnu_options() {
     local i
 
     for i in $* ;do
@@ -26,64 +26,64 @@ function gnu_options() {
 }
 
 
-function print_version() {
+print_version() {
     echo "$exname ver. $version";
 }
 
 
-function print_help() {
+print_help() {
     print_version
     echo "$help"
 }
 
 
-function print_exit() {
+print_exit() {
     echo $@
     exit 1
 }
 
 
-function print_syntax_error() {
+print_syntax_error() {
     [ "$*" ] ||	print_syntax_error "$FUNCNAME: no arguments"
     print_exit "${ERROR}script error:${NORMAL} $@" >&2
 }
 
 
-function print_syntax_warning() {
+print_syntax_warning() {
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$exname" ] || print_syntax_error "$FUNCNAME: 'exname' var is null or not defined."
     echo "$exname: ${WARNING}script warning:${NORMAL} $@" >&2
 }
 
 
-function print_error() {
+print_error() {
     [ "$*" ] || print_syntax_warning "$FUNCNAME: no arguments."
     [ "$exname" ] || print_exit "$FUNCNAME: 'exname' var is null or not defined." >&2
     print_exit "$exname: ${ERROR}error:${NORMAL} $@" >&2
 }
 
 
-function die() {
+die() {
     [ "$*" ] || print_syntax_warning "$FUNCNAME: no arguments."
     [ "$exname" ] || print_exit "$FUNCNAME: 'exname' var is null or not defined." >&2
     print_exit "$exname: ${ERROR}error:${NORMAL} $@" >&2
 }
 
 
-function print_warning() {
+print_warning() {
     [ "$*" ] || print_syntax_warning "$FUNCNAME: no arguments."
     [ "$exname" ] || print_syntax_error "$FUNCNAME: 'exname' var is null or not defined."
     echo "$exname: ${WARNING}warning:${NORMAL} $@" >&2
 }
 
 
-function print_usage() {
+print_usage() {
     [ "$usage" ] || print_error "$FUNCNAME: 'usage' variable is not set or empty."
     echo "usage: $usage"
 }
 
 
-function invert_list() {
+invert_list() {
     local newlist
 
     newlist=" "
@@ -94,7 +94,7 @@ function invert_list() {
 }
 
 
-function get_path() {
+get_path() {
     local type
 
     type="$(type -t "$1")"
@@ -112,7 +112,7 @@ function get_path() {
 }
 
 
-function depends() {
+depends() {
 
     ## Very important not to collide with variables that are created
     ## with depends.
@@ -141,7 +141,7 @@ function depends() {
 }
 
 
-function require() {
+require() {
 
     local i path
 
@@ -159,7 +159,7 @@ function require() {
 }
 
 
-function check() {
+check() {
     for i in $@; do
       [ "$(type -t "check_$i")" == "function" ] &&
           "check_$i" && continue
@@ -169,7 +169,7 @@ function check() {
 }
 
 
-function check_ls_timestyle() {
+check_ls_timestyle() {
 
     depends ls
 
@@ -182,7 +182,7 @@ function check_ls_timestyle() {
 }
 
 
-function print_bytes () {
+print_bytes () {
 
     depends bc
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments.";
@@ -222,12 +222,12 @@ function print_bytes () {
 
 
 ## compatibility:
-function print_octets () {
+print_octets () {
     print_bytes "$@"
 }
 
 
-function is_set() {
+is_set() {
     local i val
 
     for i in $*; do
@@ -240,7 +240,7 @@ function is_set() {
 }
 
 
-function checkfile () {
+checkfile () {
 
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$3" ] && print_syntax_error "$FUNCNAME: too much arguments."
@@ -294,8 +294,8 @@ function checkfile () {
 }
 
 
-function matches() {
 
+matches() {
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$3" ] && print_syntax_error "$FUNCNAME: too much arguments."
 
@@ -303,7 +303,7 @@ function matches() {
 }
 
 
-function find_conf_file() {
+find_conf_file() {
 
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$2" ] && print_syntax_error "$FUNCNAME: too much arguments."
@@ -332,29 +332,29 @@ function find_conf_file() {
 }
 
 
-function str_is_uint() {
+str_is_uint() {
     matches "$1" "[0-9]\+"
 }
 
 
-function str_is_sint() {
+str_is_sint() {
     matches "$1" '\(-\|+\)\?[0-9]\+'
 }
 
 
-function str_is_sreal() {
+str_is_sreal() {
     matches "$1" '\(-\|+\)\?[0-9]\+\(\.[0-9]\+\)\?'
 }
 
 
-function str_is_ipv4() {
+str_is_ipv4() {
     ## XXXvlab: not perfect as it will match 929.267829872.2.129782
     matches "$1" '[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+'
 }
 
 
 ## BSD / GNU sed compatibility layer
-function sed_compat() {
+sed_compat() {
 
     depends sed cat
 
@@ -372,7 +372,7 @@ function sed_compat() {
 
 
 ## BSD / GNU md5 compatibility layer
-function md5_compat() {
+md5_compat() {
 
     depends cat
 
@@ -391,7 +391,7 @@ function md5_compat() {
 
 
 ## BSD / GNU compatible
-function get_perm() {
+get_perm() {
     if test "$BSD_STAT"; then
 	"$stat" -f %OLp "$1"
 	return 0
@@ -401,22 +401,22 @@ function get_perm() {
 }
 
 
-function check_perm() {
+check_perm() {
     [ "$(get_perm "$1")" == "$2" ]
 }
 
 
-function same_contents() {
+same_contents() {
     "$diff" "$1" "$2" >/dev/null 2>&1
 }
 
 
-function is_set() {
+is_set() {
     "$print_env" "$1" >/dev/null 2>&1
 }
 
 
-function pause() {
+pause() {
     read -sn1 key
 }
 
