@@ -65,8 +65,8 @@ COL_INFO=$[$COLUMNS - $SEP_INFO_STATUS_SIZE - $SIZE_INFO]
 COL_ELT=$[$COLUMNS - $SEP_ELT_INFO_SIZE - $SIZE_ELT]
 
 
-function ansi_color()
-{
+ansi_color() {
+
     if [ "$1" != "no" ]; then
 
         SET_COL_CHAR=$(echo -en "\e[${COL_CHAR}G")
@@ -113,6 +113,7 @@ function ansi_color()
 
         ansi_color="yes"
 
+
     else
 
         SET_COL_CHAR=
@@ -150,6 +151,11 @@ function ansi_color()
 
     fi
 
+    export SET_COL_CHAR SET_COL_STATUS SET_COL_INFO SET_COL_ELT \
+           SET_BEGINCOL UP DOWN LEFT RIGHT SAVE RESTORE NORMAL \
+           GRAY RED GREEN YELLOW BLUE PINK CYAN WHITE DARKGRAY \
+           DARKRED DARKGREEN DARKYELLOW DARKBLUE DARKPINK DARKCYAN \
+           SUCCESS WARNING FAILURE NOOP ON OFF ERROR ansi_color
 }
 
 ansi_color "$ansi_color"
