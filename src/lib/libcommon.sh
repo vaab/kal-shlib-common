@@ -8,17 +8,18 @@ verb() { [ "$VERBOSE" ] && echo -en "$*\n" >&2 ; }
 debug() { [ "$DEBUG" ] && echo -en "$*\n" >&2 ; }
 err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
 die() { err "$@" ; exit 1; }
+export -f warn info verb debug err die
 
 
 gnu_options() {
     local i
 
-    for i in $* ;do
-        if [ "$i"  = '--help' ]; then
+    for i in "$@" ;do
+        if [ "$i" == '--help' ]; then
             print_help
             exit 0
         fi
-        if [ "$i"  = '--version' ]; then
+        if [ "$i" == '--version' ]; then
             print_version
             exit 0
         fi
@@ -87,7 +88,7 @@ invert_list() {
     local newlist
 
     newlist=" "
-    for i in $* ; do
+    for i in "$@" ; do
         newlist=" $i${newlist}"
     done
     echo $newlist
@@ -122,7 +123,7 @@ depends() {
     test "$__tr" ||
         print_error "dependency check : couldn't find 'tr' command."
 
-    for __i in $@ ; do
+    for __i in "$@" ; do
 
         if ! __path=$(get_path $__i); then
             __new_name=$(echo $__i | "$__tr" '_' '-')
@@ -145,9 +146,9 @@ require() {
 
     local i path
 
-    for i in $@; do
+    for i in "$@"; do
 
-        if ! path=$(get_path $i); then
+        if ! path=$(get_path "$i"); then
             return 1;
         else
             if ! test -z "$path"; then
@@ -230,7 +231,7 @@ print_octets () {
 is_set() {
     local i val
 
-    for i in $*; do
+    for i in "$@"; do
         val=$(eval echo -n \$$i)
         if test -z "$val"; then
             print_error "Variable \$$i is not set."
@@ -247,7 +248,7 @@ checkfile () {
 
     separate=$(echo "$1" | sed_compat 's/(.)/ \1/g')
 
-    for i in $(echo $1 | sed_compat 's/(.)/ \1/g'); do
+    for i in $separate; do
         case "$i" in
             "")
                 :
@@ -422,8 +423,8 @@ pause() {
 
 depends basename
 
-[ -n "$exname" ] || exname=$("$basename" $0)
-[ -n "$fullexname" ] || fullexname=$0
+[ -n "$exname" ] || exname="$("$basename" "$0")"
+[ -n "$fullexname" ] || fullexname="$0"
 
 depends grep sed stat cut diff df
 
