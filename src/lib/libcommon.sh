@@ -8,7 +8,6 @@ verb() { [ -z "$VERBOSE" ] || echo -en "$*\n" >&2; }
 debug() { [ -z "$DEBUG" ] || echo -en "$*\n" >&2; }
 err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
 die() { err "$@" ; exit 1; }
-export -f warn info verb debug err die
 
 
 gnu_options() {
