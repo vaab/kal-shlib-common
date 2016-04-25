@@ -37,10 +37,9 @@ function remove() {
 ## for more info on parsing separated fields and the implementation of
 ## this function.
 read-0() {
-    local eof
-    eof=
+    local eof= IFS=''
     while [ "$1" ]; do
-        IFS='' read -r -d '' "$1" || eof=true
+        read -r -d '' "$1" || eof=true
         shift
     done
     test "$eof" != true
