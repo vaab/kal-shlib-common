@@ -66,8 +66,17 @@ COL_ELT=$[$COLUMNS - $SEP_ELT_INFO_SIZE - $SIZE_ELT]
 
 
 ansi_color() {
+    local choice="$1"
 
-    if [ "$1" != "no" ]; then
+    if [ "$choice" == "tty" ]; then
+        if [ -t 1 ]; then
+            choice="yes"
+        else
+            choice="no"
+        fi
+    fi
+
+    if [ "$choice" != "no" ]; then
 
         SET_COL_CHAR=$(echo -en "\e[${COL_CHAR}G")
         SET_COL_STATUS=$(echo -en "\e[${COL_STATUS}G")
@@ -111,9 +120,6 @@ ansi_color() {
         OFF=$FAILURE
         ERROR=$FAILURE
 
-        ansi_color="yes"
-
-
     else
 
         SET_COL_CHAR=
@@ -147,8 +153,6 @@ ansi_color() {
         OFF=
         ERROR=
 
-        ansi_color="no"
-
     fi
 
     export SET_COL_CHAR SET_COL_STATUS SET_COL_INFO SET_COL_ELT \
@@ -158,6 +162,6 @@ ansi_color() {
            SUCCESS WARNING FAILURE NOOP ON OFF ERROR ansi_color
 }
 
-ansi_color "$ansi_color"
+ansi_color "${ansi_color:-tty}"
 
 ## End libcolor.sh
