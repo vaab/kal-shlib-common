@@ -1,6 +1,4 @@
-#!/bin/bash
-
-src_file="$pkg_path"/lib/liblock.sh
+src_file=../src/lib/liblock.sh
 
 prefix_cmd="
 . /etc/shlib
@@ -8,18 +6,7 @@ prefix_cmd="
 source '$src_file'
 "
 
-export pkg_path src_file
-[ "$DEBUG" ] && echo "Loading testlib..."
-if ! . ./libtest ; then
-   echo 'libtest failed to load.'
-   exit 1
-fi
-
-export COLUMNS=50
-
-
-test_pid_file="$tmp_dir/test.$$pid.tmp"
-rm -f "$test_pid_file"
+test_pid_file="$test_tmpdir/test.$$pid.tmp"
 
 
 ##
@@ -55,5 +42,3 @@ is err reg "$test_pid_file"  ## mention least the file name in it.
 is err reg "$test_pid_file"  ## mention not set.
 is errlvl 1
 is out ""
-
-summary
