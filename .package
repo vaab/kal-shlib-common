@@ -1,0 +1,6 @@
+NAME="kal-shlib-common"
+DESCRIPTION="Kalysto Shell Library common libs"
+EMAIL="valentin.lab@kalysto.org"
+AUTHOR="Valentin Lab"
+AUTHOR_EMAIL="$AUTHOR <$EMAIL>"
+
