@@ -87,22 +87,14 @@ invert_list() {
 }
 
 
-get_path() {
-    local type
-
-    type="$(type -t "$1")"
-    case $type in
-        ("file")
-            type -p "$1"
-            return 0
-            ;;
-        ("function" | "builtin" )
-            echo "$1"
-            return 0
-            ;;
-    esac
+get_path() { (
+    IFS=:
+    for d in $PATH; do
+        filename="$d/$1"
+        if test -x "$filename"; then echo "$d/$1"; return 0; fi
+    done
     return 1
-}
+) }
 
 
 depends() {
