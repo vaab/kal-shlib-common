@@ -1,0 +1,38 @@
+exname=$(basename $0)
+src_file=../src/lib/libstore.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+assert_check() {
+    local rep="$1"
+    try "store:session:vars:set mykey < <(echo -en '$rep') &&
+    store:session:vars:get mykey | hd"
+    noerror
+    is out "$(echo -en "$rep" | hd )"$'\n'
+}
+
+
+assert_check 'a'
+assert_check 'a\b'
+assert_check 'a\b\\c'
+assert_check 'a\0b'
+assert_check 'a\0b\0c'
+
+assert_check 'a\\c\ndf\0sdk\\0jfd\0lkjdflkdj\\kdjflkjf'
+
+
+try "store:session:vars:set mykey < <(echo -en '$rep') &&
+    store:session:vars:has mykey"
+noerror
+is out ""
+
+try "store:session:vars:set mykey < <(echo -en '$rep') &&
+    store:session:vars:has mykey2"
+is errlvl 1
+is out ""
+is err ""
+
