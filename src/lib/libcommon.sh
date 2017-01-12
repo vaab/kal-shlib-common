@@ -63,13 +63,6 @@ print_error() {
 }
 
 
-die() {
-    [ "$*" ] || print_syntax_warning "$FUNCNAME: no arguments."
-    [ "$exname" ] || print_exit "$FUNCNAME: 'exname' var is null or not defined." >&2
-    print_exit "$exname: ${ERROR}error:${NORMAL} $@" >&2
-}
-
-
 print_warning() {
     [ "$*" ] || print_syntax_warning "$FUNCNAME: no arguments."
     [ "$exname" ] || print_syntax_error "$FUNCNAME: 'exname' var is null or not defined."
