@@ -171,6 +171,8 @@ ansi_color() {
            SUCCESS WARNING FAILURE NOOP ON OFF ERROR ansi_color
 }
 
-ansi_color "${ansi_color:-tty}"
+color:init() {
+    ansi_color "${ansi_color:-tty}"
+}
 
 ## End libcolor.sh

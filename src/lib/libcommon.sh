@@ -420,12 +420,6 @@ pause() {
 }
 
 
-depends basename
-
-[ -n "$exname" ] || exname="$("$basename" "$0")"
-[ -n "$fullexname" ] || fullexname="$0"
-
-depends grep sed stat cut diff df
 
 if ! is_set BSD_SED; then
     "$sed" --version > /dev/null 2>&1 || BSD_SED=1
@@ -491,6 +485,15 @@ settmpdir() {
     declare -g $varname=$(mktemp -d)
     trap_add EXIT,INT "rm -rf \"${!varname}\" ; debug \"destructed tmp dir ${!varname}.\""
     debug "Temporary directory set up, variable \$$varname ready."
+}
+
+common:init() {
+    depends basename
+
+    [ -n "$exname" ] || exname="$("$basename" "$0")"
+    [ -n "$fullexname" ] || fullexname="$0"
+
+    export exname fullexname
 }
 
 ## End libcommon.sh
