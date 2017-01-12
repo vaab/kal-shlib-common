@@ -98,40 +98,34 @@ get_path() { (
 
 
 depends() {
-
-    ## Very important not to collide with variables that are created
-    ## with depends.
+    ## Avoid colliding with variables that are created with depends.
     local __i __tr __path
-
     __tr=$(get_path "tr")
     test "$__tr" ||
-        print_error "dependency check : couldn't find 'tr' command."
+        die "dependency check: couldn't find 'tr' command."
 
     for __i in "$@" ; do
-
         if ! __path=$(get_path $__i); then
             __new_name=$(echo $__i | "$__tr" '_' '-')
             if [ "$__new_name" != "$__i" ]; then
                 depends "$__new_name"
             else
-                print_error "dependency check : couldn't find '$__i' command."
+
+                print_error "dependency check: couldn't find '$__i' required command."
             fi
         else
             if ! test -z "$__path" ; then
                 export "$(echo $__i | "$__tr" '-' '_')"=$__path
             fi
         fi
-
     done
 }
 
 
+
 require() {
-
     local i path
-
     for i in "$@"; do
-
         if ! path=$(get_path "$i"); then
             return 1;
         else
@@ -139,7 +133,6 @@ require() {
                 export $i=$path
             fi
         fi
-
     done
 }
 
@@ -149,7 +142,7 @@ check() {
         [ "$(type -t "check_$i")" == "function" ] &&
             "check_$i" && continue
 
-        print_error "dependency check : couldn't find 'check_$i' function."
+        print_error "dependency check: couldn't find 'check_$i' function."
     done
 }
 
@@ -276,7 +269,7 @@ checkfile () {
     done
 
     return 0
-    }
+}
 
 
 matches() {
