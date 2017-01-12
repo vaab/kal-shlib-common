@@ -352,51 +352,68 @@ str_is_ipv4() {
 }
 
 
+_sed_compat_load() {
+    if get_path sed >/dev/null; then
+        if sed --version >/dev/null 2>&1; then  ## GNU
+            sed_compat() { sed -r "$@"; }
+            sed_compat_i() { sed -r -i "$@"; }
+        else                                    ## BSD
+            sed_compat() { sed -E "$@"; }
+            sed_compat_i() { sed -E -i "" "$@"; }
+        fi
+    else
+        ## Look for ``gsed``
+        if (get_path gsed && gsed --version) >/dev/null 2>&1; then
+            sed_compat() { gsed -r "$@"; }
+            sed_compat_i() { gsed -r -i "$@"; }
+        else
+            die "$exname: required GNU or BSD sed not found"
+        fi
+    fi
+}
+
 ## BSD / GNU sed compatibility layer
-sed_compat() {
+sed_compat() { _sed_compat_load; sed_compat "$@"; }
+sed_compat_i() { _sed_compat_load; sed_compat_i "$@"; }
 
-    depends sed cat
 
-    if test "$BSD_SED"; then
-        ## BSD sed
-        "$cat" - | "$sed" -E "$1"
-        return 0
+compat_date() {
+    if get_path date >/dev/null; then
+        if date --version >/dev/null 2>&1 ; then  ## GNU
+            compat_date() { date -d "@$1" "$2"; }
+        else                                      ## BSD
+            compat_date() { date -j -f %s "$1" "$2"; }
+        fi
+    else
+        if (get_path gdate && gdate --version) >/dev/null 2>&1; then
+            compat_date() { gdate -d "@$1" "$2"; }
+        else
+            die "$exname: required GNU or BSD date not found"
+        fi
     fi
-
-    ## GNU sed
-    "$cat" - | "$sed" -r "$1"
-    return 0
-
+    compat_date "$1" "$2"
 }
 
 
-## BSD / GNU md5 compatibility layer
 md5_compat() {
-
-    depends cat
-
-    if test "$BSD_MD5"; then
-        ## BSD md5
-    depends md5
-    "$cat" - | "$md5"
-    return 0
+    if get_path md5sum >/dev/null; then
+        md5_compat() { md5sum | cut -f -32; }
+    elif get_path md5 >/dev/null; then
+        md5_compat() { md5; }
+    else
+        die "$exname: required GNU or BSD date not found"
     fi
-
-    ## GNU md5
-    depends md5sum
-    "$cat" - | "$md5sum" | "$cut" -c -32
-    return 0
+    md5_compat
 }
 
 
-## BSD / GNU compatible
 get_perm() {
-    if test "$BSD_STAT"; then
-        "$stat" -f %OLp "$1"
-        return 0
+    depends stat
+    if "$stat" --version >/dev/null; then
+        get_perm() { "$stat" "$1" -c %a; }
+    else
+        get_perm() { "$stat" -f %OLp "$1"; }
     fi
-
-    "$stat" "$1" -c %a
 }
 
 
@@ -421,21 +438,6 @@ pause() {
 
 
 
-if ! is_set BSD_SED; then
-    "$sed" --version > /dev/null 2>&1 || BSD_SED=1
-fi
-
-if ! is_set BSD_MD5; then
-    type md5sum > /dev/null 2>&1 || BSD_MD5=1
-fi
-
-if ! is_set BSD_STAT; then
-    "$stat" --version > /dev/null 2>&1 || BSD_STAT=1
-fi
-
-if ! is_set BSD_DF; then
-    "$df" --version > /dev/null 2>&1 || BSD_DF=1
-fi
 
 
 ## appends a command to the signal handler functions
