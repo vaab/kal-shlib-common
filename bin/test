@@ -1,0 +1,18 @@
+#!/bin/bash
+
+exname="$(basename $0)"
+
+if ! [ -d "../pkg" ]; then
+    echo "Please execute this in test directory, with '../bin/$exname'." >&2
+    exit 1
+fi
+
+base=$(realpath "$PWD/..")
+export base
+export SHLIB_PATH="$base/src/lib"
+
+export PROFILE_STORE_DIR=$base/.profiles
+
+cd "$base/test"
+
+exec sunit -e README.rst "$@"
