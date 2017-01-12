@@ -1,0 +1,102 @@
+# -*- mode: shell-script -*-
+
+SOURCE="$(realpath ../src/lib/libdecorator.sh)"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$SOURCE'
+
+"
+
+
+
+##
+## Parse a function to find the decorator
+##
+
+try "
+
+foo() {
+    :test: arg1 arg2
+    echo \"running foo\"
+}
+
+decorator.parse_fn test foo | hd
+
+" "parse basic function to find decorator"
+noerror
+is out "\
+00000000  61 72 67 31 20 61 72 67  32 00 66 6f 6f 28 29 20  |arg1 arg2.foo() |
+00000010  7b 0a 20 20 20 20 65 63  68 6f 20 22 72 75 6e 6e  |{.    echo \"runn|
+00000020  69 6e 67 20 66 6f 6f 22  0a 7d 0a                 |ing foo\".}.|
+0000002b
+"
+
+##
+## Creates a function :test:
+##
+
+try "
+
+:test:() {
+    :decorator: body
+    echo \"CODE\"
+    echo \"Body:\$body\"
+}
+
+
+:test:
+
+! declare -f :test: | grep :decorator: >/dev/null
+
+" "create decorator test"
+noerror
+is out "CODE
+Body:
+"
+
+
+##
+## Full example
+##
+
+teardown() { cd "$test_tmpdir"; rm -rf test1; }
+
+## Note that ``caller`` builtin does not work in non-script. So we
+## must directly test by creating a sample script.
+setup() {
+    cd "$test_tmpdir"; mkdir test1;
+    cd test1
+    cat <<EOF > foo
+#!/bin/bash
+
+. $SOURCE
+
+:test:() {
+    :decorator: body
+    local args="\$@"
+    echo "do something with args '\$args'"
+    eval "\$body"
+}
+
+foo() {
+    :test: arg1 arg2
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'test'.
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/test1/foo" "full example"
+noerror
+is out "do something with args 'arg1 arg2'
+running foo
+running foo
+"
+
+

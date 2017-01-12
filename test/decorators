@@ -1,0 +1,375 @@
+# -*- mode: shell-script -*-
+
+
+
+prefix_cmd=". /etc/shlib
+
+include common
+"
+SOURCE="$(realpath ../src/lib/libdecorator.sh)"
+DECORATORS="$(realpath ../src/lib/libdecorators.sh)"
+
+
+##
+## Decorator 'once'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+foo() {
+    :once: echo "only once"
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate once"
+noerror
+is out "only once
+running foo
+running foo
+"
+
+
+
+##
+## Decorator 'depends'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+
+foo() {
+    :depends: ls grep cat xxkds-not-existent-for-sure
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate depends with missing dep"
+is errlvl 1
+is err "foo: error: dependency check: couldn't find 'xxkds-not-existent-for-sure' required command.
+" NOCOLOR TRIM
+is out ""
+
+
+##
+## Decorator 'depends'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+foo() {
+    :depends: ls grep cat
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate depends satisfying deps"
+noerror
+is out "running foo
+running foo
+"
+
+
+
+##
+## Decorator 'include'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+foo() {
+    :include: not-existent-package-lib
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate include not satisfied"
+is errlvl 1
+is err reg "include: error: file '.*' cannot be open for read." NOCOLOR TRIM
+is out ""
+
+
+
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+foo() {
+    :include: common
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+declare -f foo
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate include satisfied lib"
+noerror
+is out "running foo
+running foo
+foo ()
+{
+echo \"running foo\"
+}
+" TRIM
+
+
+
+##
+## Decorator 'from'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+foo() {
+    :from: mypack-3.2::xxx import foo_not_existent
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate from not satisfied"
+is errlvl 1
+is err "from: error: file '$SHLIB_PATH/mypack/3.2/libxxx.sh' cannot be open for read.
+:from:: error: 'from mypack-3.2 import foo_not_existent' failed.
+" NOCOLOR TRIM
+is out ""
+
+
+setup() {
+    cd "$test_tmpdir"
+    mkdir -p mypack/2.5
+    cat <<EOF > mypack/2.5/libxxx.sh
+bar() { echo "In function bar"; }
+EOF
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+
+foo() {
+    :from: mypack-2.5::xxx import bar
+    echo "running foo"
+    bar
+}
+
+export SHLIB_PATH=$test_tmpdir
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate from satisfied"
+noerror
+is out "running foo
+In function bar
+running foo
+In function bar
+"
+
+
+
+##
+## Decorator 'uses'
+##
+
+setup() {
+    cd "$test_tmpdir"
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+
+foo() {
+    :uses: variable_name_not_existent
+    echo "running foo"
+}
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate uses not satisfied"
+is errlvl 1
+is err "foo: error: decorator:uses: required variable '\$variable_name_not_existent' is not set.
+" NOCOLOR TRIM
+is out ""
+
+
+setup() {
+    cd "$test_tmpdir"
+    mkdir -p mypack/2.5
+    cat <<EOF > mypack/2.5/libxxx.sh
+bar() { echo "In function bar"; }
+EOF
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+
+foo() {
+    :uses: SHLIB_PATH
+    echo "running foo"
+}
+
+export SHLIB_PATH=$test_tmpdir
+
+foo
+foo  ## second time, no more execution of 'once' code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate uses satisfied"
+noerror
+is out "running foo
+running foo
+"
+
+
+##
+## Decorator 'statedir'
+##
+
+
+setup() {
+    cd "$test_tmpdir"
+    mkdir -p mypack/2.5
+    cat <<EOF > mypack/2.5/libxxx.sh
+bar() { echo "In function bar"; }
+EOF
+    cat <<EOF > foo
+#!/bin/bash
+
+source '$SOURCE'
+source '$DECORATORS'
+
+exname="\$(basename "\$0")"  ## required by depends
+
+
+foo() {
+    :statedir:
+    echo "running foo in statedir '\$statedir'"
+}
+
+foo
+declare -f foo
+foo  ## second time, no more execution foo code.
+
+EOF
+
+    chmod +x foo
+}
+
+try "$test_tmpdir/foo" "decorate statedir"
+noerror
+is out reg "running foo in statedir '/tmp/.*'
+running foo in statedir '/tmp/.*'
+"
