@@ -27,7 +27,61 @@ remove() {
     echo "$content"
 }
 
+## Outputs on stdout the content of "$1" with these replaced:
+##   \\ -> \
+##   \0 -> NUL
+##
+## Effectively unquoting what was quoted with ``quote-0``.
+unquote-0 () {
+    local input="$1"
+
+    while [ "$input" ]; do
+        # echo input:
+        # echo "$input" | prefix "  | "
+        case "${input::2}" in
+            '\\')
+                echo -n '\'
+                input=${input:2}
+                ;;
+            "\0")
+                echo -ne '\0'
+                input=${input:2}
+                ;;
+            *)
+                chunk="${input%%\\[0\\]*}"
+                echo -n "$chunk"
+                input="${input:${#chunk}}"
+                ;;
+        esac
+    done
 }
+
+
+## Outputs on stdout the content of stdin with these replaced:
+##   \0  -> \\0
+##   NUL -> \0
+##
+## You can then store the stdin in a bash variable or pass it as argument.
+quote-0() {
+    local c chunk end=
+    while true; do
+        if ! read-0 c; then
+            end=true
+        fi
+        while [ "$c" ]; do
+            chunk="${c%%\\0*}"
+            echo -n "${chunk}"
+            if [ "$chunk" != "$c" ]; then
+                chunk="$chunk\\"
+                echo -n "\\\\"
+            fi
+            c="${c:${#chunk}}"
+        done
+        [ "$end" ] && break
+        echo -n '\0'
+    done
+}
+
 
 ## Check
 ## https://vaab.blog.kal.fr/2015/01/03/bash-lore-how-to-properly-parse-nul-separated-fields/

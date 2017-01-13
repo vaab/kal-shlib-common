@@ -1,0 +1,61 @@
+exname=$(basename $0)
+
+src_file=../src/lib/libparse.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+test_pid_file="$test_tmpdir/test.$$.tmp"
+
+
+assert_compare_quote-0() {
+    cat - > "$test_pid_file"
+    try "\
+## File:
+$(cat "$test_pid_file" | hd | sed -r 's/^/# /g')
+diff -u <(
+  quoted=\$(cat "$test_pid_file" | quote-0; echo -n "x")
+  unquote-0 \"\${quoted::-1}\"
+) \"$test_pid_file\""
+    is out ""
+}
+
+
+##
+## quote-0
+##
+
+try "echo -n 'a' | quote-0"
+noerror
+is out 'a'
+
+try "echo 'a' | quote-0"
+noerror
+is out 'a
+'
+
+try "unquote-0 'a'"
+noerror
+is out 'a'
+
+try "unquote-0 'a
+'"
+noerror
+is out 'a
+'
+
+
+assert_compare_quote-0 < <(echo 'a')
+assert_compare_quote-0 < <(echo -n 'a')
+assert_compare_quote-0 < <(echo -en 'a\nb')
+assert_compare_quote-0 < <(echo -en 'a\nb  c\n\n')
+assert_compare_quote-0 < <(echo -en '\0')
+assert_compare_quote-0 < <(echo -en '\\0')
+assert_compare_quote-0 < <(echo -en '\\')
+assert_compare_quote-0 < <(echo -en '\\')
+assert_compare_quote-0 < <(echo -en '\01\02')
+
+
