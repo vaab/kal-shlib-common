@@ -1,3 +1,5 @@
+# -*- mode: shell-script -*-
+
 exname=$(basename $0)
 
 src_file=../src/lib/libcommon.sh
@@ -15,22 +17,24 @@ source '$src_file'
 
 ## no args
 
-try "DEBUG=1; settmpdir; echo \$tmpdir"
-is err "Temporary directory set up, variable \$tmpdir ready.
+try "DEBUG=1; settmpdir; echo \$bash_TMPDIR"
+is err "Temporary directory set up, variable \$bash_TMPDIR ready.
 destructed tmp dir $(out).
 "
 is errlvl 0
 [ -d "$(out)" ] && { echo "dir $(out) should not exist anymore." ; exit 1; }
 
 
-try "settmpdir; [ -d \"\$tmpdir\" ] && echo 'found dir'"
+
+try "settmpdir; [ -d \"\$bash_TMPDIR\" ] && echo 'found dir'" 'no args'
 noerror
 is out "found dir
 "
 
 
 test_value_pid="uniq-$$"
-try "tmpdir=/tmp/test-$test_value_pid; mkdir -p \$tmpdir; settmpdir ; echo \$tmpdir"
+try "bash_TMPDIR=/tmp/test-$test_value_pid ; mkdir -p \$bash_TMPDIR; settmpdir ; echo \$bash_TMPDIR" \
+    'tmpdir already existent.'
 noerror
 is out "/tmp/test-$test_value_pid
 "
@@ -38,9 +42,10 @@ is out "/tmp/test-$test_value_pid
 rmdir "/tmp/test-$test_value_pid"
 
 
+
 test_value_pid="uniq-$$"
-try "DEBUG=1; tmpdir=/tmp/test-$test_value_pid; mkdir -p \$tmpdir; settmpdir ; echo \$tmpdir"
-is err "Use given \$tmpdir variable (/tmp/test-$test_value_pid)
+try "DEBUG=1; bash_TMPDIR=/tmp/test-$test_value_pid; mkdir -p \$bash_TMPDIR; settmpdir ; echo \$bash_TMPDIR"
+is err "Use given \$bash_TMPDIR variable (/tmp/test-$test_value_pid)
 "
 is errlvl 0
 rmdir "/tmp/test-$test_value_pid"

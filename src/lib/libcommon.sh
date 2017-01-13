@@ -464,14 +464,14 @@ prefix() {
 
 ## self destruct temp dir
 settmpdir() {
-    local varname="${1:-tmpdir}" var
+    local varname="${1:-${exname}_TMPDIR}" var
     var=${!varname}
     [ "$var" ] && {
         debug 'Use given $'"$varname"' variable ('"$var"')'
         return 0
     }
     declare -g $varname=$(mktemp -d)
-    trap_add EXIT,INT "rm -rf \"${!varname}\" ; debug \"destructed tmp dir ${!varname}.\""
+    trap_add EXIT,INT "rm -rf \"${!varname:?}\" ; debug \"destructed tmp dir ${!varname}.\""
     debug "Temporary directory set up, variable \$$varname ready."
 }
 
