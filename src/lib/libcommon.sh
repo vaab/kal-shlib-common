@@ -406,7 +406,8 @@ same_contents() {
 
 
 is_set() {
-    "$print_env" "$1" >/dev/null 2>&1
+    depends printenv
+    "$printenv" "$1" >/dev/null 2>&1
 }
 
 
@@ -414,6 +415,13 @@ pause() {
     read -sn1 key
 }
 
+uses() {
+    for var_decl in "$@"; do
+        if ! is_set "$var_decl"; then
+            print_error "${FUNCNAME[1]}: required variable '\$$var_decl' is not set."
+        fi
+    done
+}
 
 
 
