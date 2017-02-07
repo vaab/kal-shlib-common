@@ -1,12 +1,11 @@
 ## Begin libstore.sh
 
 include parse
-
 include decorators
 
 store() {
     local scope="$1" store="$2" action="$3"
-    shift 4
+    shift 3
     fn=store:$scope:$store:$action
     if fn.exists "$fn"; then
         "$fn" "$@"
