@@ -478,8 +478,11 @@ settmpdir() {
 common:init() {
     depends basename
 
-    [ -n "$exname" ] || exname="$("$basename" "$0")"
-    [ -n "$fullexname" ] || fullexname="$0"
+    ## We want to force exname in the current session
+    # [ -n "$exname" ] || exname="$("$basename" "$0")"
+    # [ -n "$fullexname" ] || fullexname="$0"
+    exname="$("$basename" "$0")"
+    fullexname="$0"
 
     export exname fullexname
 }
