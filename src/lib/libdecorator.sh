@@ -44,7 +44,7 @@ decorator.load() {
               $(echo "$d_body" | tail -n +2 )
           $decorator() {
                   local __decorator_body
-                  echo \"IN: \${FUNCNAME[*]}\"
+                  # echo \"IN: \${FUNCNAME[*]}\"
                   fn=\${FUNCNAME[1]}
                   [ \"\$fn\" ] || {
                       echo \"\$FUNCNAME: $decorator: couldn't get caller information.\" >&2
