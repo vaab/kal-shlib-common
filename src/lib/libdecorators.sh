@@ -1,5 +1,6 @@
 ## Begin libdecorators.sh
 
+include decorator
 
 :statedir:() {
     :include: statedir

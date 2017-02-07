@@ -2,6 +2,7 @@
 
 include parse
 
+include decorators
 
 store() {
     local scope="$1" store="$2" action="$3"
