@@ -2,18 +2,20 @@
 
 include decorator
 
-:statedir:() {
-    :include: statedir
-    :once: state:init
 
-    local fn="$1" statement="$2" body="$3"
-    eval "$fn() { local statedir=\${${exname}_STATEDIR}"$'\n'"$(echo "$body" | tail -n +2 )"
-}
+# :statedir:() {
+#     :decorator: body
+#     :include: statedir
+#     :once: state:init
+#     local statement="$@"
+
+#     eval "$fn() { local statedir=\${${exname}_STATEDIR}"$'\n'"$(echo "$body" | tail -n +2 )"
+# }
 
 
-
-decorator:uses() {
-    local fn="$1" statement="$2" body="$3"
+:uses:() {
+    :decorator: body
+    local statement="$@"
     uses $statement
     eval "$body"
 }

@@ -74,8 +74,8 @@ EOF
 
 try "$test_tmpdir/foo" "decorate depends with missing dep"
 is errlvl 1
-is err "foo: error: dependency check: couldn't find 'xxkds-not-existent-for-sure' required command.
-" NOCOLOR TRIM
+is err "foo: error: dependency check: couldn't find 'xxkds-not-existent-for-sure' required command." \
+   NOCOLOR TRIM
 is out ""
 
 
@@ -181,8 +181,7 @@ running foo
 foo ()
 {
 echo \"running foo\"
-}
-" TRIM
+}" TRIM
 
 
 
@@ -216,8 +215,7 @@ EOF
 try "$test_tmpdir/foo" "decorate from not satisfied"
 is errlvl 1
 is err "from: error: file '$SHLIB_PATH/mypack/3.2/libxxx.sh' cannot be open for read.
-:from:: error: 'from mypack-3.2 import foo_not_existent' failed.
-" NOCOLOR TRIM
+:from:: error: 'from mypack-3.2 import foo_not_existent' failed." NOCOLOR TRIM
 is out ""
 
 
@@ -292,8 +290,7 @@ EOF
 
 try "$test_tmpdir/foo" "decorate uses not satisfied"
 is errlvl 1
-is err "foo: error: decorator:uses: required variable '\$variable_name_not_existent' is not set.
-" NOCOLOR TRIM
+is err "foo: error: :uses:: required variable '\$variable_name_not_existent' is not set." NOCOLOR TRIM
 is out ""
 
 
@@ -339,37 +336,37 @@ running foo
 ##
 
 
-setup() {
-    cd "$test_tmpdir"
-    mkdir -p mypack/2.5
-    cat <<EOF > mypack/2.5/libxxx.sh
-bar() { echo "In function bar"; }
-EOF
-    cat <<EOF > foo
-#!/bin/bash
+# setup() {
+#     cd "$test_tmpdir"
+#     mkdir -p mypack/2.5
+#     cat <<EOF > mypack/2.5/libxxx.sh
+# bar() { echo "In function bar"; }
+# EOF
+#     cat <<EOF > foo
+# #!/bin/bash
 
-source '$SOURCE'
-source '$DECORATORS'
+# source '$SOURCE'
+# source '$DECORATORS'
 
-exname="\$(basename "\$0")"  ## required by depends
+# exname="\$(basename "\$0")"  ## required by depends
 
 
-foo() {
-    :statedir:
-    echo "running foo in statedir '\$statedir'"
-}
+# foo() {
+#     :statedir:
+#     echo "running foo in statedir '\$statedir'"
+# }
 
-foo
-declare -f foo
-foo  ## second time, no more execution foo code.
+# foo
+# declare -f foo
+# foo  ## second time, no more execution foo code.
 
-EOF
+# EOF
 
-    chmod +x foo
-}
+#     chmod +x foo
+# }
 
-try "$test_tmpdir/foo" "decorate statedir"
-noerror
-is out reg "running foo in statedir '/tmp/.*'
-running foo in statedir '/tmp/.*'
-"
+# try "$test_tmpdir/foo" "decorate statedir"
+# noerror
+# is out reg "running foo in statedir '/tmp/.*'
+# running foo in statedir '/tmp/.*'
+# "
