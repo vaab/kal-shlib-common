@@ -30,49 +30,10 @@ if [ -z "$COLUMNS" ]; then
     export COLUMNS LINES SIZE
 fi
 
-
-
-SEP_LIST_ELT=""
-SEP_ELT_INFO=" "
-SEP_INFO_STATUS=" "
-SEP_STATUS_CHAR=" "
-
-SEP_LIST_ELT_SIZE=${#SEP_LIST_ELT}
-SEP_ELT_INFO_SIZE=${#SEP_ELT_INFO}
-SEP_INFO_STATUS_SIZE=${#SEP_INFO_STATUS}
-SEP_STATUS_CHAR_SIZE=${#SEP_STATUS_CHAR}
-
-export SEP_LIST_ELT SEP_ELT_INFO SEP_INFO_STATUS SEP_STATUS_CHAR SEP_LIST_ELT_SIZE SEP_ELT_INFO_SIZE \
-       SEP_INFO_STATUS_SIZE SEP_STATUS_CHAR_SIZE
-
-
-SIZE_LINE=$COLUMNS                            ## full line size
-SIZE_INFO=20                                  ## zone info size in chars
-SIZE_STATUS=8                                 ## status info size in chars
-SIZE_LIST=3                                   ## status info size in chars
-SIZE_CHAR=1                                   ## status char info size
-SIZE_ELT=$[$SIZE_LINE - 1
-    - $SIZE_INFO
-    - $SIZE_STATUS
-    - $SIZE_LIST
-    - $SIZE_CHAR
-    - $SEP_LIST_ELT_SIZE
-    - $SEP_ELT_INFO_SIZE
-    - $SEP_INFO_STATUS_SIZE
-    - $SEP_STATUS_CHAR_SIZE
-]                 ## elt info size in chars
-
-export SIZE_LINE SIZE_INFO SIZE_STATUS SIZE_LIST SIZE_CHAR SIZE_ELT
-
-COL_CHAR=$[$COLUMNS - 1 - $SIZE_CHAR]
-COL_STATUS=$[$COL_CHAR - $SEP_STATUS_CHAR_SIZE - $SIZE_STATUS]
-COL_INFO=$[$COLUMNS - $SEP_INFO_STATUS_SIZE - $SIZE_INFO]
-COL_ELT=$[$COLUMNS - $SEP_ELT_INFO_SIZE - $SIZE_ELT]
-
 ANSI_ESC=$'\e['
 
-
 export COL_CHAR COL_STATUS COL_INFO COL_ELT ANSI_ESC
+
 
 ansi_color() {
     local choice="$1"
