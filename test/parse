@@ -1,0 +1,38 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libparse.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+try 'next-0 < <(echo "hello"
+                echo -en "\0")'
+noerror
+is out 'hello
+'
+
+
+
+try 'next-0 < <(echo "hello"
+                echo "you"
+                echo -en "\0")'
+noerror
+is out 'hello
+you
+'
+
+
+try '{ next-0; echo x; next-0; } < <(echo "hello"
+                echo -en "\0"
+                echo "you"
+                echo -en "\0")'
+noerror
+is out 'hello
+x
+you
+'
+

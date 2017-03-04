@@ -96,6 +96,13 @@ read-0() {
     test "$eof" != true
 }
 
+## output on stdin the next record separated by a '\0'
+next-0() {
+    local ans IFS=''
+    read -r -d '' ans
+    echo -n "$ans"
+}
+
 
 is_uint () {  [[ "$1" =~ ^[0-9]+$ ]] ; }
 is_int () {  [[ "$1" =~ ^-?[0-9]+$ ]] ; }
