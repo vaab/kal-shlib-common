@@ -1,0 +1,126 @@
+# -*- mode: shell-script -*-
+
+exname=$(basename $0)
+
+src_file="../src/lib/libcla.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+try "cla.normalize | tr '\0' '\n'"
+noerror
+is out ""
+
+
+try "cla.normalize a | tr '\0' '\n'"
+noerror
+is out "a
+"
+
+try "cla.normalize a b c | hexdump -v -e '/1 \"%02X \"'"
+noerror
+is out "61 00 62 00 63 00 "
+
+
+try "cla.normalize a b c | tr '\0' '\n'"
+noerror
+is out "\
+a
+b
+c
+"
+
+try "cla.normalize --a -b -c | tr '\0' '\n'"
+noerror
+is out "\
+--a
+-b
+-c
+"
+
+try "cla.normalize --a 1 -b 2 -c 3 | tr '\0' '\n'"
+noerror
+is out "\
+--a
+1
+-b
+2
+-c
+3
+"
+
+try "cla.normalize -abcd | tr '\0' '\n'"
+noerror
+is out "\
+-a
+-b
+-c
+-d
+"
+
+try "cla.normalize --a -abcd 2 -xy | tr '\0' '\n'"
+noerror
+is out "\
+--a
+-a
+-b
+-c
+-d
+2
+-x
+-y
+"
+
+try "cla.normalize --abcd -abcd | tr '\0' '\n'"
+noerror
+is out "\
+--abcd
+-a
+-b
+-c
+-d
+"
+
+
+##
+## cla.normalize
+##
+
+try "cla.normalize a -b --c -a=1 --b=2 | tr '\0' '\n'"
+noerror
+is out "\
+a
+-b
+--c
+-a
+1
+--b
+2
+"
+
+try "cla.normalize -a='3x2=4' | tr '\0' '\n'"
+noerror
+is out "\
+-a
+3x2=4
+"
+
+
+##
+## cla.normalize
+##
+
+try "cla.normalize -xa='3x2=4' | tr '\0' '\n'"
+noerror
+is out "\
+-x
+-a
+3x2=4
+"
+
+
+
