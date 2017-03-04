@@ -6,6 +6,14 @@ cla.normalize() {
     while [ "$#" != 0 ]; do
         arg=$1
         case "$arg" in
+            --)
+                shift
+                for elt in "$@"; do
+                    echo -n "$elt"
+                    echo -en '\0'
+                done
+                return 0
+                ;;
             --*=*|-*=*)
                 shift
                 set -- "${arg%%=*}" "${arg#*=}" "$@"

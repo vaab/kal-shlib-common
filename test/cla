@@ -109,17 +109,25 @@ is out "\
 3x2=4
 "
 
-
-##
-## cla.normalize
-##
-
 try "cla.normalize -xa='3x2=4' | tr '\0' '\n'"
 noerror
 is out "\
 -x
 -a
 3x2=4
+"
+
+
+
+try "cla.normalize -xa='3x2=4' -- hi -da --hello=you  | tr '\0' '\n'"
+noerror
+is out "\
+-x
+-a
+3x2=4
+hi
+-da
+--hello=you
 "
 
 
