@@ -436,21 +436,17 @@ trap_add() {
         return 1
     }
     cmd="$@"
-    [[ "$cmd" == *"'"* ]] && {
-        err "${FUNCNAME} doesn't yet support command with character ' (apostrophe)." >&2
-        return 1
-    }
     while IFS="," read -d "," sig; do
         [ "$sig" ] || continue
         prev_cmd="$(trap -p "$sig")"
         if [ "$prev_cmd" ]; then
-            new_cmd="${prev_cmd#trap -- \'}"
-            new_cmd="${new_cmd%\' "$sig"};$cmd"
+            prev_cmd=$(eval "set -- $prev_cmd"; echo "$3" )
+            new_cmd="$cmd"$'\n'"${prev_cmd}"
         else
             new_cmd="$cmd"
         fi
         trap -- "$new_cmd" "$sig" || {
-            echo "unable to add command '$@' to trap $sig" >&2 ;
+            echo "unable to add command '$@' to trap $sig" >&2
             return 1
         }
     done < <(echo "$sigs,")

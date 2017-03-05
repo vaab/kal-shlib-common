@@ -26,10 +26,15 @@ noerror
 is out "hop
 "
 
-## First in First out
 try "trap_add EXIT,INT echo 'exit/int'
 trap_add EXIT echo 'exit'
-echo 'hop'"
+echo 'hop'" 'last in first out'
+noerror
+is out "hop
+exit
+exit/int
+"
+
 try "trap_add EXIT,,,,INT echo 'exit/int'
 echo hop" 'support empty sigs'
 noerror
@@ -38,8 +43,25 @@ hop
 exit/int
 "
 
+## Due to a rename of INT -> SIGINT by trap, this was not working
+try "trap_add EXIT,INT echo 'exit/int'
+trap_add EXIT,INT echo 'exit'" 'double traps on sigs'
+noerror
+is out "\
+exit
+exit/int
+"
+
+
+## Apostrophe support
+try "trap_add EXIT,INT \"echo 'exit/int\\\$PWD'\"
+trap_add EXIT,INT \"echo 'exit1'\"
+echo hop
+" 'single quote'
 noerror
 is out "hop
-exit/int
-exit
+exit1
+exit/int\$PWD
 "
+
+

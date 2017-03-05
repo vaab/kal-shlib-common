@@ -7,7 +7,6 @@ cla.normalize() {
         arg=$1
         case "$arg" in
             --)
-                shift
                 for elt in "$@"; do
                     echo -n "$elt"
                     echo -en '\0'
