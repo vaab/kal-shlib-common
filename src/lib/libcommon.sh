@@ -430,7 +430,7 @@ uses() {
 #
 # example: trap_add EXIT,INT close_ssh "$ip"
 trap_add() {
-    local sigs="$1" sig cmd old_cmd
+    local sigs="$1" sig cmd prev_cmd new_cmd
     shift || {
         echo "${FUNCNAME} usage error" >&2
         return 1
@@ -441,6 +441,7 @@ trap_add() {
         return 1
     }
     while IFS="," read -d "," sig; do
+        [ "$sig" ] || continue
         prev_cmd="$(trap -p "$sig")"
         if [ "$prev_cmd" ]; then
             new_cmd="${prev_cmd#trap -- \'}"

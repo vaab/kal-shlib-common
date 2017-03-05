@@ -30,6 +30,14 @@ is out "hop
 try "trap_add EXIT,INT echo 'exit/int'
 trap_add EXIT echo 'exit'
 echo 'hop'"
+try "trap_add EXIT,,,,INT echo 'exit/int'
+echo hop" 'support empty sigs'
+noerror
+is out "\
+hop
+exit/int
+"
+
 noerror
 is out "hop
 exit/int
