@@ -1,3 +1,5 @@
+# -*- mode: shell-script -*-
+
 src_file=../src/lib/liblock.sh
 
 prefix_cmd="

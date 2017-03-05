@@ -1,7 +1,5 @@
 # -*- mode: shell-script -*-
 
-exname=$(basename $0)
-
 src_file="../src/lib/libcla.sh"
 
 prefix_cmd="
@@ -116,8 +114,6 @@ is out "\
 -a
 3x2=4
 "
-
-
 
 try "cla.normalize -xa='3x2=4' -- hi -da --hello=you  | tr '\0' '\n'"
 noerror

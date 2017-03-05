@@ -1,3 +1,4 @@
+# -*- mode: shell-script -*-
 
 exname=$(basename $0)
 

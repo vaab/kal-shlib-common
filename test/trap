@@ -1,4 +1,5 @@
-exname=$(basename $0)
+# -*- mode: shell-script -*-
+
 
 src_file=../src/lib/libcommon.sh
 
