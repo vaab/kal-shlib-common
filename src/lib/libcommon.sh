@@ -102,14 +102,14 @@ get_path() { (
 
 depends() {
     ## Avoid colliding with variables that are created with depends.
-    local __i __tr __path
+    local __i __tr __path __new_name
     __tr=$(get_path "tr")
     test "$__tr" ||
         die "dependency check: couldn't find 'tr' command."
 
-    for __i in "$@" ; do
-        if ! __path=$(get_path $__i); then
-            __new_name=$(echo $__i | "$__tr" '_' '-')
+    for __i in "$@"; do
+        if ! __path=$(get_path "$__i"); then
+            __new_name=$(echo "$__i" | "$__tr" '_' '-')
             if [ "$__new_name" != "$__i" ]; then
                 depends "$__new_name"
             else
@@ -118,7 +118,7 @@ depends() {
             fi
         else
             if ! test -z "$__path" ; then
-                export "$(echo $__i | "$__tr" '-' '_')"=$__path
+                export "$(echo $__i | "$__tr" -- '- ' '__')"="$__path"
             fi
         fi
     done

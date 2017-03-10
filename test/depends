@@ -1,0 +1,78 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libcommon.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+uniq=0ZUymXBeyVJ8voux4K58W10E88vO8
+try "depends doesnotexists$uniq" "should not find what doesn't exists"
+is errlvl 1
+is err "\
+sunit: error: dependency check: couldn't find 'doesnotexists$uniq' required command.
+" NOCOLOR
+is out ""
+
+
+try "depends 'does not exists $uniq'" "should not find what doesn't exists (contains spaces)"
+is errlvl 1
+is err "\
+sunit: error: dependency check: couldn't find 'does not exists $uniq' required command.
+" NOCOLOR
+is out ""
+
+
+setup() {
+    cd "$test_tmpdir"; mkdir test1;
+    cd test1
+    cat <<EOF > "mytestfoocommand$uniq"
+#!/bin/bash
+true
+EOF
+    chmod +x "mytestfoocommand$uniq"
+}
+
+teardown() {
+    rm -rf "$test_tmpdir/test1"
+}
+
+
+
+try "
+PATH=$test_tmpdir/test1:$PATH
+
+depends 'mytestfoocommand$uniq'
+echo \"found: \$mytestfoocommand$uniq\"
+
+" "should find our dummy command in PATH"
+noerror
+is out part "/test1/mytestfoocommand$uniq"
+
+
+
+setup() {
+    cd "$test_tmpdir"; mkdir "test 1";
+    cd "test 1"
+    cat <<EOF > "mytest foo command$uniq"
+#!/bin/bash
+true
+EOF
+    chmod +x "mytest foo command$uniq"
+}
+
+teardown() {
+    rm -rf "$test_tmpdir/test 1"
+}
+
+try "
+PATH=\"$test_tmpdir/test 1:$PATH\"
+
+depends 'mytest foo command$uniq'
+echo \"found: \$mytest_foo_command$uniq\"
+
+" "should find our dummy command in PATH (space)"
+noerror
+is out part "/test 1/mytest foo command$uniq"
