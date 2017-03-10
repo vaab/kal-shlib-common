@@ -91,7 +91,10 @@ get_path() { (
     IFS=:
     for d in $PATH; do
         filename="$d/$1"
-        if test -x "$filename"; then echo "$d/$1"; return 0; fi
+        [ -f "$filename" -a -x "$filename" ] && {
+            echo "$d/$1"
+            return 0
+        }
     done
     return 1
 ) }
