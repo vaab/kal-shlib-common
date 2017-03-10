@@ -53,7 +53,6 @@ exit/int
 "
 
 
-## Apostrophe support
 try "trap_add EXIT,INT \"echo 'exit/int\\\$PWD'\"
 trap_add EXIT,INT \"echo 'exit1'\"
 echo hop
@@ -65,3 +64,63 @@ exit/int\$PWD
 "
 
 
+try "trap_add EXIT,INT \"echo 'exit/int\\\$PWD'\"
+trap_add EXIT,INT \"echo 'exit1'\"
+(
+   trap_add EXIT,INT \"echo 'exit3'\"
+   echo inside subshell
+)
+echo main shell
+" 'exit shell is reset in subshell and does not change main shell'
+noerror
+is out "\
+inside subshell
+exit3
+main shell
+exit1
+exit/int\$PWD
+"
+
+
+setup() {
+    cd "$test_tmpdir"; mkdir test1;
+    cd test1
+    cat <<EOF > foo
+#!/bin/bash
+
+. /etc/shlib
+
+source '$src_file'
+
+trap_add EXIT,INT "echo 'trapped'"
+
+echo "Starting.."
+sleep 5 &&
+echo "  ..Finished peacefully"
+
+EOF
+    chmod +x foo
+}
+teardown() {
+    rm -rf "$test_tmpdir/test 1"
+}
+
+
+try '
+source ../src/lib/libpid.sh
+{
+  setsid $test_tmpdir/test1/foo
+} &
+pid=$(pid.get_child_pids $!)
+sleep 0.2
+echo -n ^C  ## simulating display of ^C done by the tty
+kill -s SIGINT -$pid
+wait
+
+' 'trap on EXIT and INT would call both in case of Ctrl-C'
+noerror
+is out "\
+Starting..
+^Ctrapped
+trapped
+"
