@@ -11,10 +11,6 @@ source '$src_file'
 "
 
 
-##
-## settmpdir
-##
-
 ## no args
 
 try "DEBUG=1; exname=toto; settmpdir; echo \$toto_TMPDIR"
@@ -22,7 +18,7 @@ is err "Temporary directory set up, variable \$toto_TMPDIR ready.
 destructed tmp dir $(ACTION_out).
 "
 is errlvl 0
-[ -d "$(ACTION_out)" ] && { echo "dir $(ACTION_out) should not exist anymore." ; exit 1; }
+is '! [ -d "$(ACTION_out)" ]'
 
 
 
@@ -42,8 +38,8 @@ try "exname=toto
 noerror
 is out "/tmp/test-$test_value_pid
 "
-[ -d "$(ACTION_out)" ] || { echo "dir $(ACTION_out) should still be there." ; exit 1; }
-rmdir "/tmp/test-$test_value_pid"
+is '[ -d "$(ACTION_out)" ]'
+rmdir "/tmp/test-$test_value_pid" 2>/dev/null
 
 
 
@@ -52,7 +48,7 @@ try "DEBUG=1; exname=toto; toto_TMPDIR=/tmp/test-$test_value_pid; mkdir -p \$tot
 is err "Use given \$toto_TMPDIR variable (/tmp/test-$test_value_pid)
 "
 is errlvl 0
-rmdir "/tmp/test-$test_value_pid"
+rmdir "/tmp/test-$test_value_pid" 2>/dev/null
 
 ## with args
 
@@ -62,7 +58,7 @@ is err "Temporary directory set up, variable \$mytmpdir ready.
 destructed tmp dir $(ACTION_out).
 "
 is errlvl 0
-[ -d "$(ACTION_out)" ] && { echo "dir $(ACTION_out) should not exist anymore." ; exit 1; }
+is '! [ -d "$(ACTION_out)" ]'
 
 
 try "settmpdir mytmpdir; [ -d \"\$mytmpdir\" ] && echo 'found dir'"
@@ -76,8 +72,8 @@ try "mytmpdir=/tmp/test-$test_value_pid; mkdir -p \$mytmpdir; settmpdir mytmpdir
 noerror
 is out "/tmp/test-$test_value_pid
 "
-[ -d "$(ACTION_out)" ] || { echo "dir $(ACTION_out) should still be there." ; exit 1; }
-rmdir "/tmp/test-$test_value_pid"
+is '[ -d "$(ACTION_out)" ]'
+rmdir "/tmp/test-$test_value_pid" 2>/dev/null 2>/dev/null
 
 
 test_value_pid="uniq-$$-4"
@@ -85,7 +81,12 @@ try "DEBUG=1; mytmpdir=/tmp/test-$test_value_pid; mkdir -p \$mytmpdir; settmpdir
 is err "Use given \$mytmpdir variable (/tmp/test-$test_value_pid)
 "
 is errlvl 0
-rmdir "/tmp/test-$test_value_pid"
+rmdir "/tmp/test-$test_value_pid" 2>/dev/null
+
+
+
+
+
 setup() {
     cd "$test_tmpdir"; mkdir test1;
     cd test1
