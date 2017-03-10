@@ -471,7 +471,7 @@ settmpdir() {
         return 0
     }
     declare -g $varname=$(mktemp -d)
-    trap_add EXIT,INT "rm -rf \"${!varname:?}\" ; debug \"destructed tmp dir ${!varname}.\""
+    trap_add EXIT "rm -rf \"${!varname:?}\" ; debug \"destructed tmp dir ${!varname}.\""
     debug "Temporary directory set up, variable \$$varname ready."
 }
 
