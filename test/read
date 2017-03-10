@@ -1,0 +1,33 @@
+# -*- mode: shell-script -*-
+
+src_file=../src/lib/libpretty.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+pretty:init
+"
+
+export COLUMNS=50
+
+
+
+ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
+export -f ascii_table
+
+try '
+(
+ascii_table;
+echo
+) |
+while read-0a line; do
+    echo "$line"
+done | hexdump -v -e "/1 \"%02X\n\""
+
+' 'read-0a can read all chars in ascii table except NUL'
+is err ''
+is out part "$({ ascii_table ; echo; } | hexdump -v -e '/1 "%02X\n"'| tail -n +2)
+"
+is errlvl 0
+

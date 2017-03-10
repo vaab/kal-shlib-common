@@ -96,6 +96,15 @@ read-0() {
     test "$eof" != true
 }
 
+read-0a() {
+    local eof= IFS=''
+    while [ "$1" ]; do
+        IFS='' read -r -d $'\n' "$1" || eof=true
+        shift
+    done
+    test "$eof" != true
+}
+
 ## output on stdin the next record separated by a '\0'
 next-0() {
     local ans IFS=''
