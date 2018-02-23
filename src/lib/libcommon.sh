@@ -164,41 +164,61 @@ check_ls_timestyle() {
 
 
 print_bytes () {
+    local bytes="$1" float unit_level unit _print_bytes_units
+    _print_bytes_units=(byte bytes {K,M,G,T,P,E,Z,Y}iB)
 
-    depends bc
+    read float unit_level < <(_get_bytes "$bytes")
+    read float unit < <(printf "%.2f %s" "$float" "${_print_bytes_units[$unit_level]}")
+    if ((unit_level < 2)) && [ "${float:(-3)}" == ".00" ]; then
+        float="${float::-3}"
+    fi
+    echo -n "$float $unit"
+}
+
+print_bytes_aligned () {
+    local bytes="$1" float unit_level unit _print_bytes_units
+    _print_bytes_units=(byte bytes {K,M,G,T,P,E,Z,Y}iB)
+    read float unit_level < <(_get_bytes "$bytes")
+    IFS=$'\t' read float unit < <(printf "%7.2f\t%s" "$float" "${_print_bytes_units[$unit_level]}")
+    if ((unit_level < 2)) && [ "${float:(-3)}" == ".00" ]; then
+        float="${float::-3}   "
+    fi
+    echo -n "$float $unit"
+}
+
+## Will round to floor (truncate).
+_get_bytes () {
+    local bytes="$1" _p _d precision _max_born _unit
+
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments.";
     [ "$2" ] && print_syntax_error "$FUNCNAME: too much arguments.";
 
+    precision=3  ## nb of decimals
 
-    (
-        export LC_ALL=C
+    ##singular
+    _unit=0
+    [ "$bytes" == 0 -o "$bytes" == 1 ] && { echo "$bytes $_unit"; return 0; }
+    ((_unit++))
+    [ "$bytes" -lt 1024 ] && { echo "$bytes $_unit"; return 0; }
+    ((_unit++))
 
-        bytes="$1"
-        [ "$bytes" == 0 -o "$bytes" == 1 ] && { printf "%s byte" $bytes; return 0;}
-
-        [ "$(echo "$bytes < 1024" | "$bc" )" == "1" ] &&
-            { printf "%s bytes" $bytes; return 0;}
-
-        kbytes="$(echo "$bytes / 1024" | bc )"
-        [ "$(echo "$kbytes < 1024" | bc)" == "1" ] &&
-            { printf "%.2f KiB" "$(echo "$bytes / 1024" | "$bc" -l)" ; return 0; }
-
-        mbytes="$(echo "$kbytes / 1024" | bc )"
-        [ "$(echo "$mbytes < 1024" | bc)" == "1" ] &&
-            { printf "%.2f MiB" "$(echo "$kbytes / 1024" | "$bc" -l)" ; return 0; }
-
-        gbytes="$(echo "$mbytes / 1024" | bc )"
-        [ "$(echo "$gbytes < 1024" | bc )" == "1" ] &&
-            { printf "%.2f GiB" "$(echo "$mbytes / 1024" | "$bc" -l)" ; return 0; }
-
-        tbytes="$(echo "$gbytes / 1024" | bc )"
-        [ "$(echo "$tbytes < 1024" | bc )" == "1" ] &&
-            { printf "%.2f TiB" "$(echo "$gbytes / 1024" | "$bc" -l)" ; return 0; }
-
-
-        pbytes="$(echo "$tbytes / 1024" | bc )"
-        printf "%.2f PiB" "$(echo "$tbytes / 1024" | "$bc" -l)"
-    )
+    _max_born=$((2**10 * 10**precision))
+    while true; do
+        ## multiply by 10^prec and divide by 1024
+        _d=10
+        _p="$precision"
+        while ((_d)); do
+            ((bytes % 2 == 1 && _p && (_p--, bytes *= 10)))
+            ((bytes /= 2, _d--))
+        done
+        while ((_p)); do ((_p--, bytes *= 10)); done
+        [ "$bytes" -lt $_max_born ] && {
+            echo -n "${bytes::(-$precision)}.${bytes:(-$precision)}" "$_unit"
+            return 0
+        }
+        bytes="${bytes::(-$precision)}"
+        ((_unit++))
+    done
 }
 
 

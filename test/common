@@ -65,10 +65,27 @@ is out "1.82 TiB"
 
 try "print_bytes 2000000000000000000"
 noerror
-is out "1776.36 PiB"
+is out "1.73 EiB"
 
 
 ## compatibility with old API
 try "print_octets 1024"
 noerror
 is out "1.00 KiB"
+
+
+##
+## print_bytes_aligned
+##
+
+try "print_bytes_aligned 1"
+noerror
+is out "   1    byte"
+
+try "print_bytes_aligned 1024"
+noerror
+is out "   1.00 KiB"
+
+try "print_bytes_aligned 1050"
+noerror
+is out "   1.02 KiB"
