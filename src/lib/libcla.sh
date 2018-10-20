@@ -8,8 +8,7 @@ cla.normalize() {
         case "$arg" in
             --)
                 for elt in "$@"; do
-                    echo -n "$elt"
-                    echo -en '\0'
+                    printf "%s\0" "$elt"
                 done
                 return 0
                 ;;
@@ -19,8 +18,7 @@ cla.normalize() {
                 continue
                 ;;
             --*)
-                echo -n "$arg"
-                echo -en '\0'
+                printf "%s\0" "$arg"
                 ;;
             -*)
                 if [[ "${#arg}" > 2 ]]; then
@@ -32,13 +30,11 @@ cla.normalize() {
                     done
                     continue
                 else
-                    echo -n "$arg"
-                    echo -en '\0'
+                    printf "%s\0" "$arg"
                 fi
                 ;;
             *)
-                echo -n "$arg"
-                echo -en '\0'
+                printf "%s\0" "$arg"
                 ;;
         esac
         shift
