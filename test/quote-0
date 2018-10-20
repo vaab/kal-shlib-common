@@ -14,12 +14,19 @@ test_pid_file="$test_tmpdir/test.$$.tmp"
 assert_compare_quote-0() {
     cat - > "$test_pid_file"
     try "\
-## File:
-$(cat "$test_pid_file" | hd | sed -r 's/^/# /g')
+quoted=\$(cat \"$test_pid_file\" | quote-0; echo -n "x")
 diff -u <(
-  quoted=\$(cat "$test_pid_file" | quote-0; echo -n "x")
   unquote-0 \"\${quoted::-1}\"
-) \"$test_pid_file\""
+) \"$test_pid_file\" || {
+echo \"* File:\"
+cat \"$test_pid_file\" | hd | sed -r 's/^/  /g'
+echo \"* Quoted File:\"
+echo -n \"\${quoted::-1}\" | hd | sed -r 's/^/  /g'
+echo \"* Un-quoted File:\"
+unquote-0 \"\${quoted::-1}\" | hd | sed -r 's/^/  /g'
+false
+}
+"
     is out ""
 }
 
