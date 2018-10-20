@@ -81,6 +81,7 @@ ansi_color() {
         DARKBLUE="${ANSI_ESC}0;34m"
         DARKPINK="${ANSI_ESC}0;35m"
         DARKCYAN="${ANSI_ESC}0;36m"
+        DARKWHITE="${ANSI_ESC}0;37m"
 
         SUCCESS=$GREEN
         WARNING=$YELLOW
