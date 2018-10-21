@@ -27,7 +27,7 @@ gnu_options() {
 
 
 print_version() {
-    echo "$exname ver. $version";
+    echo "$exname version $version";
 }
 
 
