@@ -1,0 +1,17 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libcla.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+try "echo 'toto' | md5_compat"
+noerror
+is out "11a3e229084349bc25d97e29393ced1d
+"
+
+

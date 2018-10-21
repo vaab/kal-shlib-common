@@ -375,7 +375,7 @@ compat_date() {
 
 md5_compat() {
     if get_path md5sum >/dev/null; then
-        md5_compat() { md5sum | cut -f -32; }
+        md5_compat() { md5sum | cut -c -32; }
     elif get_path md5 >/dev/null; then
         md5_compat() { md5; }
     else
