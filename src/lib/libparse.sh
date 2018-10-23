@@ -105,10 +105,10 @@ read-0a() {
     test "$eof" != true
 }
 
-## output on stdin the next record separated by a '\0'
+## output on stdout the next record on stdin separated by a '\0'
 next-0() {
     local ans IFS=''
-    read -r -d '' ans
+    read -r -d '' ans &&
     echo -n "$ans"
 }
 

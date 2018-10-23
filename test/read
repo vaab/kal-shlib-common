@@ -1,12 +1,12 @@
 # -*- mode: shell-script -*-
 
-src_file=../src/lib/libpretty.sh
+src_file=../src/lib/libparse.sh
 
 prefix_cmd="
 . /etc/shlib
 
 source '$src_file'
-pretty:init
+
 "
 
 export COLUMNS=50
@@ -29,5 +29,21 @@ done | hexdump -v -e "/1 \"%02X\n\""
 is err ''
 is out part "$({ ascii_table ; echo; } | hexdump -v -e '/1 "%02X\n"'| tail -n +2)
 "
+is errlvl 0
+
+
+
+try '
+printf "%s\0" a b c |
+while x=$(next-0); do
+    echo "$x"
+done
+
+' 'next-0 allows to throw to its own stdout separate field from incoming stdin'
+is err ''
+is out 'a
+b
+c
+'
 is errlvl 0
 
