@@ -36,6 +36,45 @@ x
 you
 '
 
+
+try '
+while read-0a x;do
+   echo "ARG: ($x)"
+done < <(printf "%s\n%s\n" a b)
+' 'basic usage'
+
+noerror
+is out "\
+ARG: (a)
+ARG: (b)
+"
+
+try '
+while read-0a x;do
+   printf "ARG: (%-5s) - %s\n" "$x" "$(printf "%s" "$x" | hexdump -v -e "/1 \"%02x \"" | xargs echo)"
+done < <(printf "%s\0xx\n%s\n" a b)
+' "NUL can't be catched"
+
+noerror
+is out "\
+ARG: (axx  ) - 61 78 78
+ARG: (b    ) - 62
+"
+
+
+try '
+while read-0a x;do
+   printf "ARG: (%-5s) - %s\n" "$x" "$(printf "%s" "$x" | hexdump -v -e "/1 \"%02x \"" | xargs echo)"
+done < <(printf "%s\0xx\n%s\n" /a/x/y/v-1.4 b)
+' "Check other chars"
+
+noerror
+is out "\
+ARG: (/a/x/y/v-1.4xx) - 2f 61 2f 78 2f 79 2f 76 2d 31 2e 34 78 78
+ARG: (b    ) - 62
+"
+
+
 try '
 a=(1 2 3)
 
