@@ -7,9 +7,7 @@ cla.normalize() {
         arg=$1
         case "$arg" in
             --)
-                for elt in "$@"; do
-                    printf "%s\0" "$elt"
-                done
+                printf "%s\0" "$@"
                 return 0
                 ;;
             --*=*|-*=*)
@@ -17,26 +15,18 @@ cla.normalize() {
                 set -- "${arg%%=*}" "${arg#*=}" "$@"
                 continue
                 ;;
-            --*)
-                printf "%s\0" "$arg"
-                ;;
+            --*|-?) :;;
             -*)
-                if [[ "${#arg}" > 2 ]]; then
-                    letters=${arg:1}
-                    shift
-                    i=${#letters}
-                    while ((i--)); do
-                        set -- -${letters:$i:1} "$@"
-                    done
-                    continue
-                else
-                    printf "%s\0" "$arg"
-                fi
-                ;;
-            *)
-                printf "%s\0" "$arg"
+                letters=${arg:1}
+                shift
+                i=${#letters}
+                while ((i--)); do
+                    set -- -${letters:$i:1} "$@"
+                done
+                continue
                 ;;
         esac
+        printf "%s\0" "$arg"
         shift
     done
 }

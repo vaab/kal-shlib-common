@@ -33,23 +33,17 @@ remove() {
 ##
 ## Effectively unquoting what was quoted with ``quote-0``.
 unquote-0 () {
-    local input="$1"
+    local input="$1" chunk
 
     while [ "$input" ]; do
-        # echo input:
-        # echo "$input" | prefix "  | "
         case "${input::2}" in
-            '\\')
-                echo -n '\'
-                input=${input:2}
-                ;;
-            "\0")
-                echo -ne '\0'
+            '\\'|"\0")
+                printf "${input::2}"
                 input=${input:2}
                 ;;
             *)
                 chunk="${input%%\\[0\\]*}"
-                echo -n "$chunk"
+                printf "%s" "$chunk"
                 input="${input:${#chunk}}"
                 ;;
         esac
@@ -65,15 +59,13 @@ unquote-0 () {
 quote-0() {
     local c chunk end=
     while true; do
-        if ! read-0 c; then
-            end=true
-        fi
+        read-0 c || end=true
         while [ "$c" ]; do
             chunk="${c%%\\0*}"
-            echo -n "${chunk}"
+            printf "%s" "${chunk}"
             if [ "$chunk" != "$c" ]; then
                 chunk="$chunk\\"
-                echo -n "\\\\"
+                printf "%s" '\\'
             fi
             c="${c:${#chunk}}"
         done
@@ -90,19 +82,20 @@ quote-0() {
 read-0() {
     local eof= IFS=''
     while [ "$1" ]; do
-        read -r -d '' "$1" || eof=true
+        read -r -d '' -- "$1" || eof=1
         shift
     done
-    test "$eof" != true
+    [ -z "$eof" ]
 }
+
 
 read-0a() {
     local eof= IFS=''
     while [ "$1" ]; do
-        IFS='' read -r -d $'\n' "$1" || eof=true
+        IFS='' read -r -d $'\n' -- "$1" || eof=1
         shift
     done
-    test "$eof" != true
+    [ -z "$eof" ]
 }
 
 ## output on stdout the next record on stdin separated by a '\0'
