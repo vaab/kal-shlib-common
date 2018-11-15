@@ -36,3 +36,49 @@ x
 you
 '
 
+try '
+a=(1 2 3)
+
+aexport a
+export -f aimport array_deserialize
+
+bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
+' "can export/import simple valued array"
+
+noerror
+is out ' - "1"
+ - "2"
+ - "3"
+'
+
+
+try '
+a=("1 2" 3)
+
+aexport a
+export -f aimport array_deserialize
+
+bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
+' "can export/import array with space contained values"
+
+noerror
+is out ' - "1 2"
+ - "3"
+'
+
+try '
+a=("1 & 2" ";" ");" "(")
+
+aexport a
+export -f aimport array_deserialize
+
+bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
+' "can export/import array with bash meaningfull chars"
+
+noerror
+is out ' - "1 & 2"
+ - ";"
+ - ");"
+ - "("
+'
+

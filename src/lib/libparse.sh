@@ -98,6 +98,40 @@ read-0a() {
     [ -z "$eof" ]
 }
 
+
+aexport() {
+    local aname fullname value
+    for aname in "$@"; do
+        fullname="${aname}[@]"
+        value=$(args_serialize "${!fullname}") || return 1
+        export "${aname}__SERIALIZED"="$value"
+    done
+}
+
+
+aimport() {
+    local aname fullname
+    for aname in "$@"; do
+        fullname="${aname}__SERIALIZED"
+        array_deserialize "$aname" "${!fullname}"
+    done
+}
+
+
+args_serialize() {
+    printf "%s\0" "$@" | quote-0
+}
+
+array_deserialize() {
+    local array_name="$1" arg
+    args=()
+    while read-0 arg; do
+        args+=("$arg")
+    done < <(unquote-0 "$2")
+    eval "$array_name=(\"\${args[@]}\")"
+}
+
+
 ## output on stdout the next record on stdin separated by a '\0'
 next-0() {
     local ans IFS=''
