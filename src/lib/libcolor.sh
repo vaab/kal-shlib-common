@@ -126,6 +126,8 @@ ansi_color() {
 
     fi
 
+    ansi_color="$choice"
+
     export SET_COL_CHAR SET_COL_STATUS SET_COL_INFO SET_COL_ELT \
            SET_BEGINCOL UP DOWN LEFT RIGHT SAVE RESTORE NORMAL \
            GRAY RED GREEN YELLOW BLUE PINK CYAN WHITE DARKGRAY \
