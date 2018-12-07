@@ -104,8 +104,7 @@ depends() {
     ## Avoid colliding with variables that are created with depends.
     local __i __tr __path __new_name
     __tr=$(get_path "tr")
-    test "$__tr" ||
-        die "dependency check: couldn't find 'tr' command."
+    test "$__tr" || die "dependency check: couldn't find 'tr' command."
 
     for __i in "$@"; do
         if ! __path=$(get_path "$__i"); then

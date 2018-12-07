@@ -9,7 +9,7 @@ if [ -z "$COLUMNS" ]; then
     ## FHS as there is a fallback if /usr/bin/tty isn't available, for example
     ## at bootup.
 
-    test -x /usr/bin/tty && CONSOLE=`/usr/bin/tty`
+    test -x /usr/bin/tty && CONSOLE=$(/usr/bin/tty)
     test -z "$CONSOLE" && CONSOLE=/dev/console
 
     ## Get the console size (rows columns)
