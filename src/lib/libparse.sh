@@ -89,6 +89,10 @@ read-0() {
 }
 
 
+p0() {
+    printf "%s\0" "$@"
+}
+
 read-0a() {
     local eof= IFS=''
     while [ "$1" ]; do

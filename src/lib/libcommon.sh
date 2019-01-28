@@ -9,6 +9,9 @@ debug() { [ -z "$DEBUG" ] || echo -en "$*\n" >&2; }
 err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
 die() { err "$@" ; exit 1; }
 
+e() {
+    printf "%s" "$*"
+}
 
 gnu_options() {
     local i
@@ -295,6 +298,8 @@ checkfile () {
 
 
 matches() {
+    depends grep
+
     [ "$*" ] || print_syntax_error "$FUNCNAME: no arguments."
     [ "$3" ] && print_syntax_error "$FUNCNAME: too much arguments."
 
@@ -392,6 +397,27 @@ compat_date() {
         fi
     fi
     compat_date "$1" "$2"
+}
+
+
+## Creates an signature for stdin that is quite safe against collision
+## identifier that can be used in file names and is not too long.
+hash_fs() {
+    local size="${1:-64}"
+    sha512sum | xxd -r -p | base64 -w 0 | cut -c "-$size" | tr '+/=' '_%~'
+}
+
+hash_args() {
+    printf "%s\0" "$@" | hash_get
+}
+
+
+## Note: don't name that 'hash' as there is a useful builtin named like that.
+## Creates a signature for stdin that is quite safe against collision
+## identifier that is long by default (128 chars), but quick to compute.
+hash_get() {
+    local size="${1:-128}"
+    sha512sum | cut -f 1 -d ' ' | cut -c "-$size"
 }
 
 
@@ -493,6 +519,26 @@ settmpdir() {
     trap_add EXIT "rm -rf \"${!varname:?}\" ; debug \"destructed tmp dir ${!varname}.\""
     debug "Temporary directory set up, variable \$$varname ready."
 }
+
+
+contains () {
+    local e
+    for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+    return 1
+}
+
+
+dir_is_empty() {
+    local files
+    ( ## necessary to avoid changing state of nullglob and dotglob
+        shopt -s nullglob dotglob
+        files=(*)
+        echo "${#files[*]}"
+        (( ${#files[*]} ))
+    ) || return 0
+    return 1
+}
+
 
 common:init() {
     depends basename
