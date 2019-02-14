@@ -9,9 +9,14 @@ debug() { [ -z "$DEBUG" ] || echo -en "$*\n" >&2; }
 err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
 die() { err "$@" ; exit 1; }
 
-e() {
-    printf "%s" "$*"
+e() { printf "%s" "$*"; }
+p0() {
+    printf "%s\0" "$@"
 }
+H() {
+    p0 "$@" | hash_get
+}
+
 
 gnu_options() {
     local i
