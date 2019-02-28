@@ -64,5 +64,8 @@ assert_compare_quote-0 < <(echo -en '\\0')
 assert_compare_quote-0 < <(echo -en '\\')
 assert_compare_quote-0 < <(echo -en '\\')
 assert_compare_quote-0 < <(echo -en '\01\02')
+assert_compare_quote-0 < <(echo -en 'x\0y')
+assert_compare_quote-0 < <(echo -en 'x\0\0y')
+assert_compare_quote-0 < <(echo -en '0\x000')
 
 
