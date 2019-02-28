@@ -1,39 +1,5 @@
 ## Begin libcolor.sh
 
-## If COLUMNS hasn't been set yet (bash sets it but not when called as sh), do
-## it ourself
-
-if [ -z "$COLUMNS" ]; then
-
-    ## Get the console device if we don't have it already. This is ok by the
-    ## FHS as there is a fallback if /usr/bin/tty isn't available, for example
-    ## at bootup.
-
-    test -x /usr/bin/tty && CONSOLE=$(/usr/bin/tty)
-    test -z "$CONSOLE" && CONSOLE=/dev/console
-
-    ## Get the console size (rows columns)
-
-    stty size > /dev/null 2>&1
-    if [ "$?" = 0 ]; then
-        [ "$CONSOLE" = "/dev/console" ] && SIZE=$(stty size < $CONSOLE) \
-            || SIZE=$(stty size)
-
-        ## Strip off the rows leaving the columns
-
-        COLUMNS=${SIZE#*\ }
-        LINES=${SIZE%\ *}
-    else
-        COLUMNS=80
-        LINES=24
-    fi
-    export COLUMNS LINES SIZE
-fi
-
-ANSI_ESC=$'\e['
-
-export COL_CHAR COL_STATUS COL_INFO COL_ELT ANSI_ESC
-
 
 ansi_color() {
     local choice="$1"
@@ -135,8 +101,55 @@ ansi_color() {
            SUCCESS WARNING FAILURE NOOP ON OFF ERROR ansi_color
 }
 
+
 color:init() {
+
+    local cols_lines
+
+    ## If COLUMNS hasn't been set yet (bash sets it but not when called as sh), do
+    ## it ourself
+
+    if [ -z "$COLUMNS" ]; then
+
+        ## Get the console device if we don't have it already. This is ok by the
+        ## FHS as there is a fallback if /usr/bin/tty isn't available, for example
+        ## at bootup.
+
+        test -x /usr/bin/tty && CONSOLE=$(/usr/bin/tty)
+        test -z "$CONSOLE" && CONSOLE=/dev/console
+
+        ## Get the console size (rows columns)
+
+        ## ``stty size`` can output 0 0 at the very beginning.
+        count=0
+        while true; do
+            if cols_lines=$([ "$CONSOLE" = "/dev/console" ] && stty size < $CONSOLE || stty size); then
+                COLUMNS=${cols_lines#*\ }
+                LINES=${cols_lines%\ *}
+            else
+                COLUMNS=80
+                LINES=24
+            fi
+            [ "$COLUMNS" ] && [ "$COLUMNS" != 0 ] && break
+            if [ "$count" -gt 3 ]; then
+                COLUMNS=80
+                LINES=24
+            fi
+            sleep 0.05
+            ((count++))
+        done
+    else
+        export SIZE="$COLUMNS"
+    fi
+
+    export COLUMNS LINES SIZE
+
+    ANSI_ESC=$'\e['
+
+    export COL_CHAR COL_STATUS COL_INFO COL_ELT ANSI_ESC
+
     ansi_color "${ansi_color:-tty}"
+
 }
 
 ## End libcolor.sh
