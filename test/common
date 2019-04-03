@@ -89,3 +89,29 @@ is out "   1.00 KiB"
 try "print_bytes_aligned 1050"
 noerror
 is out "   1.02 KiB"
+
+
+
+try "echo 'a  b
+
+c' | nspc" "normalize spaces standard args"
+noerror
+is out "a b c"
+
+try "echo 'a  b
+
+< ; >
+c' | nspc" "normalize spaces special chars"
+noerror
+is out "a b < ; > c"
+
+try "echo '-e  b
+
+c' | nspc" "normalize spaces options in beginning"
+noerror
+is out "-e b c"
+
+
+try "echo -n '' | nspc" "normalize spaces nothing as nothing"
+noerror
+is out ""

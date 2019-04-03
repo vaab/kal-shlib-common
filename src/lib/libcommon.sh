@@ -17,6 +17,12 @@ H() {
     p0 "$@" | hash_get
 }
 
+## equivalent of 'xargs echo' with builtins
+nspc() {
+    local content
+    content=$(printf "%s " $(cat -))
+    printf "%s" "${content::-1}"
+}
 
 gnu_options() {
     local i
