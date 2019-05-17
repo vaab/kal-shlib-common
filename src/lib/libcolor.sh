@@ -134,6 +134,7 @@ color:init() {
             if [ "$count" -gt 3 ]; then
                 COLUMNS=80
                 LINES=24
+                break
             fi
             sleep 0.05
             ((count++))
