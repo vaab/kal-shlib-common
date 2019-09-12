@@ -114,31 +114,43 @@ color:init() {
         ## Get the console device if we don't have it already. This is ok by the
         ## FHS as there is a fallback if /usr/bin/tty isn't available, for example
         ## at bootup.
-
-        test -x /usr/bin/tty && CONSOLE=$(/usr/bin/tty)
-        test -z "$CONSOLE" && CONSOLE=/dev/console
+        if [ -t 0 ]; then
+            if [ -x /usr/bin/tty ]; then
+                CONSOLE=$(/usr/bin/tty)
+            elif [ -e /dev/console ]; then
+                CONSOLE=/dev/console
+            else
+                CONSOLE=
+            fi
+        fi
 
         ## Get the console size (rows columns)
 
-        ## ``stty size`` can output 0 0 at the very beginning.
-        count=0
-        while true; do
-            if cols_lines=$([ "$CONSOLE" = "/dev/console" ] && stty size < $CONSOLE || stty size); then
-                COLUMNS=${cols_lines#*\ }
-                LINES=${cols_lines%\ *}
-            else
-                COLUMNS=80
-                LINES=24
-            fi
-            [ "$COLUMNS" ] && [ "$COLUMNS" != 0 ] && break
-            if [ "$count" -gt 3 ]; then
-                COLUMNS=80
-                LINES=24
-                break
-            fi
-            sleep 0.05
-            ((count++))
-        done
+        if [ -t 0 ]; then
+            ## ``stty size`` can output 0 0 at the very beginning.
+            count=0
+            while true; do
+                if cols_lines=$([ "$CONSOLE" = "/dev/console" ] && stty size < $CONSOLE || stty size); then
+                    COLUMNS=${cols_lines#*\ }
+                    LINES=${cols_lines%\ *}
+                else
+                    COLUMNS=80
+                    LINES=24
+                fi
+                [ "$COLUMNS" ] && [ "$COLUMNS" != 0 ] && break
+                if [ "$count" -gt 3 ]; then
+                    COLUMNS=80
+                    LINES=24
+                    break
+                fi
+                sleep 0.05
+                ((count++))
+            done
+        else
+            ## default if not in tty (for instance, stdin is piped)
+            COLUMNS=80
+            LINES=24
+        fi
     else
         export SIZE="$COLUMNS"
     fi
