@@ -540,11 +540,10 @@ contains () {
 
 
 dir_is_empty() {
-    local files
+    local dir="$1" files
     ( ## necessary to avoid changing state of nullglob and dotglob
         shopt -s nullglob dotglob
-        files=(*)
-        echo "${#files[*]}"
+        files=("$dir"/*)
         (( ${#files[*]} ))
     ) || return 0
     return 1

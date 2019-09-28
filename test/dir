@@ -1,0 +1,49 @@
+# -*- mode: shell-script -*-
+
+exname=$(basename $0)
+
+src_file="../src/lib/libcommon.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+setup() {
+    cd "$test_tmpdir"
+    mkdir test1
+}
+
+teardown() {
+    rm -rf "$test_tmpdir/test1"
+}
+
+
+##
+## dir_is_empty
+##
+
+try 'cd $test_tmpdir/test1; dir_is_empty .'
+is err ""
+is out ""
+is errlvl 0
+
+try 'dir_is_empty $test_tmpdir/test1'
+is err ""
+is out ""
+is errlvl 0
+
+
+try 'cd $test_tmpdir/test1; touch a; dir_is_empty .'
+is errlvl 1
+is err ""
+is out ""
+
+
+
+try 'cd $test_tmpdir/test1; mkdir a; dir_is_empty a'
+is errlvl 0
+is err ""
+is out ""
