@@ -419,15 +419,18 @@ hash_get() {
 }
 
 
+## XXXVlab: Warning, caching will only work in used like this:
+##   md5_compat < <(echo "$content")
+## That's far from satisfying.
 md5_compat() {
     if get_path md5sum >/dev/null; then
-        md5_compat() { md5sum | cut -c -32; }
+        eval "$FUNCNAME"'() { local x; x=$(md5sum) || return 1; echo -n "${x::32}"; }'
     elif get_path md5 >/dev/null; then
-        md5_compat() { md5; }
+        eval "$FUNCNAME"'() { md5; }'
     else
-        die "$exname: required GNU or BSD date not found"
+        die "$exname: required GNU md5sum or BSD md5 not found"
     fi
-    md5_compat
+    "$FUNCNAME"
 }
 
 

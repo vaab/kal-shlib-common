@@ -11,7 +11,6 @@ source '$src_file'
 
 try "echo 'toto' | md5_compat"
 noerror
-is out "11a3e229084349bc25d97e29393ced1d
-"
+is out "11a3e229084349bc25d97e29393ced1d"
 
 
