@@ -6,8 +6,10 @@ This is part of ``kal-shlib-*`` package, you should see `documentation`_ of
 
 .. _documentation: https://github.com/vaab/kal-shlib-core/blob/master/README.rst
 
+
 How can install it ?
 --------------------
+
 
 From source
 '''''''''''
@@ -15,14 +17,15 @@ From source
 Consider this release as Very Alpha. Use at your own risk. It may or may not
 upgrade to a more user friendly version in future, depending on my spare time.
 
-Nethertheless, this package support GNU install quite well so a simple::
+Nevertheless, this package support GNU install quite well so a simple::
 
-  # autogen.sh && ./configure && make && make install
+  autogen.sh && ./configure && make && make install
 
 Should work (and has been tested and is currently used).
 
 .. note:: you can specify a prefix thanks to ``--prefix=/your/location`` as
   ``configure`` argument.
+
 
 From debian package
 '''''''''''''''''''
@@ -35,6 +38,7 @@ you should include this repository to your apt system and then::
 
   apt-get update && apt-get install kal-shlib-common
 
+
 What are dependencies for this package ?
 ----------------------------------------
 
@@ -44,6 +48,7 @@ You will need to install::
 
 before using this package. Note that if you choose the debian package
 installation, dependencies will be installed automatically.
+
 
 What do this package contains ?
 -------------------------------
