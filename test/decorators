@@ -74,7 +74,7 @@ EOF
 
 try "$test_tmpdir/foo" "decorate depends with missing dep"
 is errlvl 1
-is err "foo: error: dependency check: couldn't find 'xxkds-not-existent-for-sure' required command." \
+is err "Error: dependency check: couldn't find 'xxkds-not-existent-for-sure' required command." \
    NOCOLOR TRIM
 is out ""
 
@@ -290,7 +290,7 @@ EOF
 
 try "$test_tmpdir/foo" "decorate uses not satisfied"
 is errlvl 1
-is err "foo: error: :uses:: required variable '\$variable_name_not_existent' is not set." NOCOLOR TRIM
+is err "Error: :uses:: required variable '\$variable_name_not_existent' is not set." NOCOLOR TRIM
 is out ""
 
 

@@ -116,27 +116,14 @@ get_path() { (
 
 depends() {
     ## Avoid colliding with variables that are created with depends.
-    local __i __tr __path __new_name
-    __tr=$(get_path "tr")
-    test "$__tr" || die "dependency check: couldn't find 'tr' command."
+    local __i __path
 
     for __i in "$@"; do
-        if ! __path=$(get_path "$__i"); then
-            __new_name=$(echo "$__i" | "$__tr" '_' '-')
-            if [ "$__new_name" != "$__i" ]; then
-                depends "$__new_name"
-            else
-
-                print_error "dependency check: couldn't find '$__i' required command."
-            fi
-        else
-            if ! test -z "$__path" ; then
-                export "$(echo $__i | "$__tr" -- '- ' '__')"="$__path"
-            fi
-        fi
+        __path=$(get_path "$__i") ||
+            die "dependency check: couldn't find '$__i' required command."
+        export "$(echo "${__i//[- ]/_}")"="$__path"
     done
 }
-
 
 
 require() {
@@ -477,7 +464,7 @@ pause() {
 uses() {
     for var_decl in "$@"; do
         if ! is_set "$var_decl"; then
-            print_error "${FUNCNAME[1]}: required variable '\$$var_decl' is not set."
+            die "${FUNCNAME[1]}: required variable '\$$var_decl' is not set."
         fi
     done
 }

@@ -12,7 +12,7 @@ uniq=0ZUymXBeyVJ8voux4K58W10E88vO8
 try "depends doesnotexists$uniq" "should not find what doesn't exists"
 is errlvl 1
 is err "\
-sunit: error: dependency check: couldn't find 'doesnotexists$uniq' required command.
+Error: dependency check: couldn't find 'doesnotexists$uniq' required command.
 " NOCOLOR
 is out ""
 
@@ -20,7 +20,7 @@ is out ""
 try "depends 'does not exists $uniq'" "should not find what doesn't exists (contains spaces)"
 is errlvl 1
 is err "\
-sunit: error: dependency check: couldn't find 'does not exists $uniq' required command.
+Error: dependency check: couldn't find 'does not exists $uniq' required command.
 " NOCOLOR
 is out ""
 
