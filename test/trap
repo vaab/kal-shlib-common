@@ -83,7 +83,8 @@ exit/int\$PWD
 
 
 setup() {
-    cd "$test_tmpdir"; mkdir test1;
+    cd "$test_tmpdir"
+    mkdir test1
     cd test1
     cat <<EOF > foo
 #!/bin/bash
@@ -102,7 +103,7 @@ EOF
     chmod +x foo
 }
 teardown() {
-    rm -rf "$test_tmpdir/test 1"
+    rm -rf "$test_tmpdir/test1"
 }
 
 
