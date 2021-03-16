@@ -1,0 +1,58 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libheader.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+
+"
+
+export COLUMNS=50
+
+
+test_pid_file="$tmp_dir/test.$$pid.tmp"
+rm -f "$test_pid_file"
+
+
+##
+## header.get
+##
+
+try "\
+myfn() {
+
+    : :toto: DOCKER_IMAGE 'Source docker image to apply instructions'
+    : :titi: [DOCKER_RUN_OPTIONS...] 'Source docker image to apply instructions'
+
+    local a=b
+
+}
+
+header.get myfn | tr '\0' '\n'"
+noerror
+is out "\
+: :toto: DOCKER_IMAGE 'Source docker image to apply instructions'
+: :titi: [DOCKER_RUN_OPTIONS...] 'Source docker image to apply instructions'
+"
+
+
+try "\
+myfn() {
+
+    : :toto: f 'o' o
+    : :titi: b a \$r
+
+    x=\$(echo abc | sed -r 's/^/  /g')
+
+}
+
+header.get myfn | tr '\0' '\n'" \
+    "complex delimiter line, introducing pipes"
+noerror
+is out "\
+: :toto: f 'o' o
+: :titi: b a \$r
+"
+

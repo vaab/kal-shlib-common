@@ -1,0 +1,367 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libbparse.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+
+bparse:init
+
+enumerate_exp() {
+    local i=15
+    while bparse.read e || { errlvl=\$? ; [ \$errlvl != \$_BPARSER_EOF ] && return \$errlvl; }; do
+        echo \"EXPR: '\$e'\"
+        ((i--)) || { echo 'Loop detected' >&2; break; }
+    done
+}
+export -f enumerate_exp
+"
+
+export COLUMNS=50
+
+
+##
+## bparse.next
+##
+
+try "\
+cat <<EOF | enumerate_exp
+a
+b
+c
+EOF
+" "line separated instructions"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: 'a'
+EXPR: 'b'
+EXPR: 'c'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+a  ; b ;  c;d;e;f
+EOF
+" "instruction separated with ';'"
+is errlvl 0
+
+is out "\
+EXPR: 'a'
+EXPR: 'b'
+EXPR: 'c'
+EXPR: 'd'
+EXPR: 'e'
+EXPR: 'f'
+"
+
+try "\
+cat <<EOF | enumerate_exp
+a&b &c
+EOF
+" "instruction separated with '&'"
+is errlvl 0
+
+is out "\
+EXPR: 'a &'
+EXPR: 'b &'
+EXPR: 'c'
+"
+
+
+
+try "\
+echo -n \"\" | enumerate_exp
+" "on empty strings, no instructions"
+is errlvl 0
+#is err ""
+is out ""
+
+try "\
+echo \"\" | enumerate_exp
+" "on simple empty line, no instructions"
+is errlvl 0
+#is err ""
+is out ""
+
+
+try "\
+cat <<EOF | enumerate_exp
+echo \"a
+ b\"
+
+echo \"a b\"
+echo \"a \\\"xc\\\" b\"
+EOF
+" "multiline instruction double quotes"
+is errlvl 0
+# is err ""
+is out "\
+EXPR: 'echo \"a
+ b\"'
+EXPR: 'echo \"a b\"'
+EXPR: 'echo \"a \\\"xc\\\" b\"'
+"
+
+try "\
+cat <<EOF | enumerate_exp
+echo \"a
+
+EOF
+" "unterminated double-quoted string"
+is errlvl 4
+is err part "Unterminated double-quoted string" NOCOLOR
+is out ""
+
+try "\
+cat <<EOF | enumerate_exp
+echo 'a
+b'
+echo 'a b'
+echo 'a \" b'
+EOF
+" "multiline instruction single quotes"
+is errlvl 0
+
+is out "\
+EXPR: 'echo 'a
+b''
+EXPR: 'echo 'a b''
+EXPR: 'echo 'a \" b''
+"
+
+try "\
+cat <<EOF | enumerate_exp
+echo 'a
+
+EOF
+" "unterminated single-quoted string"
+is errlvl 4
+is err part "Unterminated single-quoted string" NOCOLOR
+is out ""
+
+
+
+try "\
+cat <<EOF | enumerate_exp
+;
+EOF
+" "syntax error on lone \;"
+is errlvl 127
+#is err ""
+is out ""
+
+
+try "\
+cat <<EOF | enumerate_exp
+  a
+b
+EOF
+" "prefix whitespaces ignored"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: 'a'
+EXPR: 'b'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+a | b
+c
+EOF
+" "piped instructions"
+#is err ""
+is errlvl 0
+is out "\
+EXPR: 'a | b'
+EXPR: 'c'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+
+c
+EOF
+" "new lines ignored"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: 'c'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+a || b
+ a ||  b
+a ||
+b
+a ||
+b
+a||b
+c
+EOF
+" "|| operator supported and normalized"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: 'a || b'
+EXPR: 'a || b'
+EXPR: 'a || b'
+EXPR: 'a || b'
+EXPR: 'a || b'
+EXPR: 'c'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+a && b
+ a &&  b
+a &&
+b
+a &&
+
+b
+a  && b
+a&&b
+c
+EOF
+" "&& operator supported and normalized"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: 'a && b'
+EXPR: 'a && b'
+EXPR: 'a && b'
+EXPR: 'a && b'
+EXPR: 'a && b'
+EXPR: 'a && b'
+EXPR: 'c'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+(true)
+( a
+  b
+  c;d )
+EOF
+" "(..) subshelling"
+is errlvl 0
+#is err ""
+is out "\
+EXPR: '( true )'
+EXPR: '( a;
+b;
+c;
+d )'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+\$
+\\\$a\\\$b \\\$c
+e \\\$foo
+e \\\${c}
+EOF
+" "\$ pound"
+# is err ""
+is errlvl 0
+is out "\
+EXPR: '\$'
+EXPR: '\$a\$b \$c'
+EXPR: 'e \$foo'
+EXPR: 'e \${c}'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+\\\$(a;b)
+EOF
+" "\$(..) pound"
+#is err ""
+is errlvl 0
+is out "\
+EXPR: '\$( a;
+b )'
+"
+
+try "\
+cat <<EOF | enumerate_exp
+echo 1>&2
+EOF
+" "redir 1>&2"
+#is err ""
+is errlvl 0
+is out "\
+EXPR: 'echo 1>&2'
+"
+
+
+try "\
+cat <<EOF | enumerate_exp
+while true; do break; done
+
+if [ \"\\\$a\" ]; then
+   echo \"\\\$(toto \\\$*)\"
+fi
+
+for i in \"\\\$@\"; do
+    echo \"\\\$(cat \"test\")\"
+done
+
+echo \\\$12
+EOF
+" "Mix"
+#is err ""
+is errlvl 0
+is out "\
+EXPR: 'while true'
+EXPR: 'do break'
+EXPR: 'done'
+EXPR: 'if [ \"\$a\" ]'
+EXPR: 'then'
+EXPR: 'echo \"\$( toto \$* )\"'
+EXPR: 'fi'
+EXPR: 'for i in \"\$@\"'
+EXPR: 'do'
+EXPR: 'echo \"\$( cat \"test\" )\"'
+EXPR: 'done'
+EXPR: 'echo \$12'
+"
+
+
+
+try "\
+cat <<EOF | enumerate_exp
+ : :toto: DOCKER_IMAGE 'Source docker image to apply instructions'
+ : :titi: [DOCKER_RUN_OPTIONS...] 'Source docker image to apply instructions'
+
+     : :posarg: POS_ARG2 'Description pos args 2 and a random long description
+                          line trespassing the 80 col boundary and with lots  of  additional   rogue
+                          new lines and spaces.'
+
+EOF
+" "headers"
+#is err ""
+is errlvl 0
+is out "\
+EXPR: ': :toto: DOCKER_IMAGE 'Source docker image to apply instructions''
+EXPR: ': :titi: [DOCKER_RUN_OPTIONS...] 'Source docker image to apply instructions''
+EXPR: ': :posarg: POS_ARG2 'Description pos args 2 and a random long description
+                          line trespassing the 80 col boundary and with lots  of  additional   rogue
+                          new lines and spaces.''
+"
+
+
+
