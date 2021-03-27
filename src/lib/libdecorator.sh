@@ -1,65 +1,75 @@
-## Begin libdecorator
+## Begin libdecorator.sh
 
 include parse
+include bparse
 
-## Reads a from given function name the code of this function and
-## extracts the given decorator in the output using 'NUL' between the
-## decorator commandline and the body of the function minus the
-## decorator line.
-decorator.parse_fn() {
-    local decorator="$1" fn="$2" found
-    prefix="$fn() {"
-    found=
-    done=
-    while IFS=$'\n' read -r line ; do
-        [ "$done" == "true" ] && { echo "$line"; continue; }
-        line_trimmed="${line#"${line%%[![:space:]]*}"}"
-        if [[ "$line_trimmed" == ":$decorator:"* ]]; then
-            found="${line_trimmed#:$decorator:}"
-            ## keep the last ";" to avoid having an empty string in '$found'
+
+## List all decorated functions
+decorator._find_all_fn() {
+    declare -f | sed -nr '/[^ ]+ \(\) $/{N;N;/\n([[:space:]]+:[^\n]*)$/{s/^([^ ]+) .*$/\1/M;P}}'
+}
+
+decorator.fn_parse_all_decorators() {
+    local fn="$1" e
+    while bparse.read e ; do
+        if [[ "$e" =~ ^":"[a-zA-Z0-9_-]+":" ]]; then
+            p0 "$e"
+        else
+            p0 ""
+            e "$e"$'\n'
+            ## exhaust the end of the file
+            cat
         fi
-        if [ "$found" ] || [[ "$line_trimmed" != *:*:* ]]; then
-            found=${found%;}
-            echo -n "${found#"${found%%[![:space:]]*}"}"
-            echo -en '\0'
-            echo "$prefix"
-            done=true
-            continue
-        fi
-        prefix="$prefix"$'\n'"$line"
-    done < <(declare -f "$fn" | tail -n "+3")
+    done < <(fn.body "$fn")
 }
 
 
-decorator.load() {
-    local decorator="$1" code= statement= body=
-}
-
-:decorator:() {
-    local decorator=${FUNCNAME[1]} _statement body_arg="$1"
-    read-0 _statement d_body < <(decorator.parse_fn decorator "$decorator")
-    eval "
-          ${decorator}:source() {
-              $([ "$body_arg" ] && echo "local ${body_arg}=\$__decorator_body")
-              $(echo "$d_body" | tail -n +2 )
-          $decorator() {
-                  local __decorator_body
-                  # echo \"IN: \${FUNCNAME[*]}\"
-                  fn=\${FUNCNAME[1]}
-                  [ \"\$fn\" ] || {
-                      echo \"\$FUNCNAME: $decorator: couldn't get caller information.\" >&2
-                      exit 1
-                  }
-                  read-0 statement __decorator_body < <(decorator.parse_fn $decorator \"\$fn\")
-                  #local fn=\"\$fn\" statement=\"\$statement\" body=\"\$body\"
-                  ${decorator}:source \"\$@\"
+## This preparation is only needed for now because we don't have
+## a proper hack in bash. This function will simply replace the
+## body of the function (not the decorator part)
+##
+## f() {
+##    :dec: a b c
+##    CODE;
+## }
+##
+## Should become:
+##
+## f() {
+##    f() {
+##        CODE
+##    }
+##    :dec: a b c
+##    f "$@"
+## }
+##
+## With the possibility for :dec: to change f if it needs to.
+##
+decorator._mangle_fn() {
+    local fn="$1" __body dec_lines dec_line
+    while read-0 dec_line; do
+        [ -z "$dec_line" ] && { read-0 __body; break; }
+        dec_lines+="$dec_line || { 
+                errlvl=\$?
+                err \"following decorator call failed with errlvl \$errlvl:\"\$'\n'\"\$(e $dec_line | prefix \"  \")\"
+                return \$((96 + errlvl))
+            }"$'\n'
+    done < <(decorator.fn_parse_all_decorators "$fn")
+    eval "$fn() {
+              $fn() {
+                  $__body
+              }
+              $dec_lines
+              $fn \"\$@\"
           }"
-    decorator=${decorator##:}
-    decorator=${decorator%%:}
-    [ -z "$body_arg" -o -z "${FUNCNAME[2]}" ] ||
-        read-0 _statement "$body_arg" < <(decorator.parse_fn "$decorator" "${FUNCNAME[2]}")
-    # echo "XXX: ${FUNCNAME[1]}:source" "${FUNCNAME[2]}" "$statement" "$body"
-    # "${FUNCNAME[1]}:source" "${FUNCNAME[2]}" "$statement" "$body"
 }
 
-## End libcommon.sh
+
+decorator.mangle() {
+    local fn
+    for fn in $(decorator._find_all_fn); do
+        decorator._mangle_fn "$fn"
+    done
+}
+
+## End libdecorator.sh

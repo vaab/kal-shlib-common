@@ -10,10 +10,26 @@ source '$SOURCE'
 "
 
 
+try "
 
-##
-## Parse a function to find the decorator
-##
+foo() {
+    :cache:;
+    echo \"computing...\" 1>&2;
+    echo \"running foo\"
+}
+
+foo2 () {
+    :test:
+    echo \"running foo\"
+}
+decorator._find_all_fn
+
+" "_find_all_fn should find foo with no arg decorator"
+is err ""
+is out "foo
+foo2" TRIM
+is errlvl 0
+
 
 try "
 
@@ -21,40 +37,207 @@ foo() {
     :test: arg1 arg2
     echo \"running foo\"
 }
+DEBUG_BPARSE=1
+decorator._find_all_fn
 
-decorator.parse_fn test foo | hd
+" "_find_all_fn should find foo simple args"
+is err ""
+is out "foo" TRIM
+is errlvl 0
 
-" "parse basic function to find decorator"
-noerror
-is out "\
-00000000  61 72 67 31 20 61 72 67  32 00 66 6f 6f 28 29 20  |arg1 arg2.foo() |
-00000010  7b 0a 20 20 20 20 65 63  68 6f 20 22 72 75 6e 6e  |{.    echo \"runn|
-00000020  69 6e 67 20 66 6f 6f 22  0a 7d 0a                 |ing foo\".}.|
-0000002b
-"
 
-##
-## Creates a function :test:
-##
 
 try "
 
-:test:() {
-    :decorator: body
-    echo \"CODE\"
-    echo \"Body:\$body\"
+wiz() {
+    :xxx:
+    :foo: arg1 arg2
+    :bar:    a1 \
+             a2 \
+          \"c d\" \
+          \"e
+            f\"
+    echo \"running foo\"
 }
 
+decorator.fn_parse_all_decorators wiz | hd
 
-:test:
-
-! declare -f :test: | grep :decorator: >/dev/null
-
-" "create decorator test"
-noerror
-is out "CODE
-Body:
+" "_find_all_fn should find foo complex args"
+#is err ""
+is out "\
+00000000  3a 78 78 78 3a 00 3a 66  6f 6f 3a 20 61 72 67 31  |:xxx:.:foo: arg1|
+00000010  20 61 72 67 32 00 3a 62  61 72 3a 20 61 31 20 61  | arg2.:bar: a1 a|
+00000020  32 20 22 63 20 64 22 20  22 65 0a 20 20 20 20 20  |2 \"c d\" \"e.     |
+00000030  20 20 20 20 20 20 20 66  22 00 00 65 63 68 6f 20  |       f\"..echo |
+00000040  22 72 75 6e 6e 69 6e 67  20 66 6f 6f 22 0a        |\"running foo\".|
+0000004e
 "
+is errlvl 0
+
+try "
+
+wiz() {
+    :foo:
+    echo \"running wiz: \$( printf \"=%s=, \" \"\$@\" )\"
+}
+
+decorator._mangle_fn wiz &&
+declare -f wiz
+
+" "_mangle_fn declare a new wiz and decorator no args"
+is out 'wiz ()
+{
+    function wiz ()
+    {
+        echo "running wiz: $( printf "=%s=, " "$@" )"
+    };
+    :foo: || {
+        errlvl=$?;
+        err "following decorator call failed with errlvl $errlvl:"'"'
+'"'"$(e :foo: | prefix "  ")";
+        return $((96 + errlvl))
+    };
+    wiz "$@"
+}' RTRIM
+is errlvl 0
+
+
+
+try "
+
+foo() {
+    :cache:;
+    echo \"computing...\" 1>&2;  ## first instruction must be supported by bparse
+    echo \"running foo\"
+}
+
+decorator._mangle_fn foo &&
+declare -f foo
+
+" "_mangle_fn declare a new wiz and decorator no args"
+is err ""
+is out 'foo ()
+{
+    function foo ()
+    {
+        echo "computing..." 1>&2;
+        echo "running foo"
+    };
+    :cache: || {
+        errlvl=$?;
+        err "following decorator call failed with errlvl $errlvl:"'"'
+'"'"$(e :cache: | prefix "  ")";
+        return $((96 + errlvl))
+    };
+    foo "$@"
+}' RTRIM
+is errlvl 0
+
+
+
+try "
+
+wiz() {
+    :foo: arg1 arg2
+    :bar:    a1 \
+             a2 \
+          \"c d\" \
+          \"e
+            f\"
+    echo \"running wiz: \$( printf \"=%s=, \" \"\$@\" )\"
+}
+
+decorator._mangle_fn wiz &&
+declare -f wiz
+
+" "_mangle_fn should declare a new wiz"
+is out 'wiz ()
+{
+    function wiz ()
+    {
+        echo "running wiz: $( printf "=%s=, " "$@" )"
+    };
+    :foo: arg1 arg2 || {
+        errlvl=$?;
+        err "following decorator call failed with errlvl $errlvl:"'"'
+'"'"$(e :foo: arg1 arg2 | prefix "  ")";
+        return $((96 + errlvl))
+    };
+    :bar: a1 a2 "c d" "e
+            f" || {
+        errlvl=$?;
+        err "following decorator call failed with errlvl $errlvl:"'"'
+'"'"$(e :bar: a1 a2 "c d" "e
+            f" | prefix "  ")";
+        return $((96 + errlvl))
+    };
+    wiz "$@"
+}' RTRIM
+is errlvl 0
+
+
+
+try "
+
+:foo:() {
+    echo 'FOO:' \$(printf \"=%s=, \" \"\$@\")
+    fn.def wiz \"echo 'before (added by foo)' ; \$(fn.body wiz)\"
+}
+
+:bar:() {
+    echo 'BAR:' \$(printf \"=%s=, \" \"\$@\")
+    fn.def wiz \"\$(fn.body wiz)\"\$'\n'\"echo 'after (added by bar)'\"
+}
+
+wiz() {
+    :foo: arg1 arg2
+    :bar:    a1 \
+             a2 \
+          \"c d\" \
+          \"e
+            f\"
+    echo \"running wiz: \$(printf \"=%s=, \" \"\$@\")\"
+}
+
+decorator._mangle_fn wiz 
+wiz 1 \"2 3\"
+declare -f wiz
+
+" "mangled fn should call decorators"
+is out 'FOO: =arg1=, =arg2=,
+BAR: =a1=, =a2=, =c d=, =e f=,
+before (added by foo)
+running wiz: =1=, =2 3=,
+after (added by bar)
+wiz ()
+{
+    echo '"'before (added by foo)'"';
+    echo "running wiz: $( printf "=%s=, " "$@" )";
+    echo '"'after (added by bar)'"'
+}' RTRIM
+is errlvl 0
+
+
+try "
+
+:foo:() {
+    return 1
+}
+
+wiz() {
+    :foo:
+    echo \"running wiz\"
+}
+
+decorator._mangle_fn wiz 
+wiz
+
+" "if decorator fails, fail function"
+is err 'Error: following decorator call failed with errlvl 1:
+  :foo:
+' NOCOLOR
+is out '' RTRIM
+is errlvl 97
 
 
 ##
@@ -74,10 +257,7 @@ setup() {
 . $SOURCE
 
 :test:() {
-    :decorator: body
-    local args="\$@"
-    echo "do something with args '\$args'"
-    eval "\$body"
+    echo "do something with args '\$@'"
 }
 
 foo() {
@@ -85,6 +265,7 @@ foo() {
     echo "running foo"
 }
 
+decorator.mangle
 foo
 foo  ## second time, no more execution of 'test'.
 EOF
@@ -98,5 +279,3 @@ is out "do something with args 'arg1 arg2'
 running foo
 running foo
 "
-
-

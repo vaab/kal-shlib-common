@@ -27,6 +27,8 @@ foo() {
     echo "running foo"
 }
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
 
@@ -36,7 +38,7 @@ EOF
 }
 
 try "$test_tmpdir/foo" "decorate once"
-noerror
+is errlvl 0
 is out "only once
 running foo
 running foo
@@ -63,6 +65,8 @@ foo() {
     :depends: ls grep cat xxkds-not-existent-for-sure
     echo "running foo"
 }
+
+decorator.mangle
 
 foo
 foo  ## second time, no more execution of 'once' code.
@@ -97,6 +101,8 @@ foo() {
     :depends: ls grep cat
     echo "running foo"
 }
+
+decorator.mangle
 
 foo
 foo  ## second time, no more execution of 'once' code.
@@ -133,6 +139,8 @@ foo() {
     echo "running foo"
 }
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
 
@@ -163,6 +171,8 @@ foo() {
     :include: common
     echo "running foo"
 }
+
+decorator.mangle
 
 foo
 foo  ## second time, no more execution of 'once' code.
@@ -204,8 +214,12 @@ foo() {
     echo "running foo"
 }
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
+
+declare -f foo
 
 EOF
 
@@ -242,8 +256,12 @@ foo() {
 
 export SHLIB_PATH=$test_tmpdir
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
+
+declare -f foo
 
 EOF
 
@@ -256,7 +274,11 @@ is out "running foo
 In function bar
 running foo
 In function bar
-"
+foo ()
+{
+    echo \"running foo\";
+    bar
+}" RTRIM
 
 
 
@@ -280,8 +302,12 @@ foo() {
     echo "running foo"
 }
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
+
+declare -f foo
 
 EOF
 
@@ -316,8 +342,12 @@ foo() {
 
 export SHLIB_PATH=$test_tmpdir
 
+decorator.mangle
+
 foo
 foo  ## second time, no more execution of 'once' code.
+
+declare -f foo
 
 EOF
 
@@ -328,7 +358,10 @@ try "$test_tmpdir/foo" "decorate uses satisfied"
 noerror
 is out "running foo
 running foo
-"
+foo ()
+{
+    echo \"running foo\"
+}" RTRIM
 
 
 ##

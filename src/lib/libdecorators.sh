@@ -3,52 +3,27 @@
 include decorator
 
 
-# :statedir:() {
-#     :decorator: body
-#     :include: statedir
-#     :once: state:init
-#     local statement="$@"
-
-#     eval "$fn() { local statedir=\${${exname}_STATEDIR}"$'\n'"$(echo "$body" | tail -n +2 )"
-# }
-
-
 :uses:() {
-    :decorator: body
-    local statement="$@"
-    uses $statement
-    eval "$body"
+    uses "$@"
 }
 
 
 :from:() {
-    :decorator: body
-    local statement="$@"
-    from $statement
-    eval "$body"
+    from "$@"
 }
 
 
 :include:() {
-    :decorator: body
-    local statement="$@"
-    include $statement
-    eval "$body"
+    include "$@"
 }
 
 
 :depends:() {
-    :decorator: body
-    local statement="$@"
-    depends $statement
-    eval "$body"
+    depends "$@"
 }
 
-
 :once:() {
-    :decorator: body
-    local statement="$@"
-    eval "$statement"$'\n'"$body"
+    "$@"
 }
 
 
