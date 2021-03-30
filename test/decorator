@@ -74,6 +74,30 @@ is out "\
 "
 is errlvl 0
 
+
+try "
+
+wiz() {
+    :xxx:
+    if true; then
+        false
+    fi
+}
+
+decorator.fn_parse_all_decorators wiz | hd
+
+" "_fn_parse_all_decorators should properly identify body as last arg"
+is err ""
+is out "\
+00000000  3a 78 78 78 3a 00 00 69  66 20 74 72 75 65 3b 20  |:xxx:..if true; |
+00000010  74 68 65 6e 0a 20 20 20  20 20 20 20 20 66 61 6c  |then.        fal|
+00000020  73 65 3b 0a 20 20 20 20  66 69 0a 00 74 68 65 6e  |se;.    fi..then|
+00000030  0a                                                |.|
+00000031
+"
+is errlvl 0
+
+
 try "
 
 wiz() {

@@ -18,7 +18,13 @@ decorator.fn_parse_all_decorators() {
             p0 "$e"
         else
             p0 ""
-            e "$e"$'\n'
+            e "$e"
+            ## If parser was in the middle of a line with multiple
+            ## instructions, append the rest of the line
+            if [ -n "${line:$_BPARSER_IDX}" ]; then
+                e ";${line:$_BPARSER_IDX}"
+            fi
+            echo
             ## exhaust the end of the file
             cat
         fi
