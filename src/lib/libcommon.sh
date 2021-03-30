@@ -485,8 +485,20 @@ trap_add() {
         return 1
     }
     cmd="$@"
+
+    ## Forcing the next ``$(trap -p)`` to output the current shell's
+    ## traps and our parent's one. Touching any trap will switch
+    ## ``trap -p`` to display the current shell traps. We choose to
+    ## reset KILL signal as it can't be caught anyway.
+    trap -- KILL
+
     while IFS="," read -d "," sig; do
         [ "$sig" ] || continue
+        ##
+        ## This subshell call to ``trap`` will be specially
+        ## interpreted as it'll allow to query it's parent shell's
+        ## traps... which means our traps.
+        ##
         prev_cmd="$(trap -p "$sig")"
         if [ "$prev_cmd" ]; then
             prev_cmd=$(eval "set -- $prev_cmd"; echo "$3" )
