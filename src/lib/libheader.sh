@@ -1,6 +1,7 @@
 ## Begin libheader.sh
 
 include bparse
+include parse
 
 ## stdout stream of header expressions separated by NUL chars
 ## note: a header is defined as the first lines of the function

@@ -79,7 +79,7 @@ try '
 a=(1 2 3)
 
 aexport a
-export -f aimport array_deserialize
+export -f aimport array_deserialize read-0 unquote-0
 
 bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
 ' "can export/import simple valued array"
@@ -95,7 +95,7 @@ try '
 a=("1 2" 3)
 
 aexport a
-export -f aimport array_deserialize
+export -f aimport array_deserialize read-0 unquote-0
 
 bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
 ' "can export/import array with space contained values"
@@ -109,7 +109,7 @@ try '
 a=("1 & 2" ";" ");" "(")
 
 aexport a
-export -f aimport array_deserialize
+export -f aimport array_deserialize read-0 unquote-0
 
 bash -c "aimport a; printf \" - \\\"%s\\\"\n\" \"\${a[@]}\""
 ' "can export/import array with bash meaningfull chars"

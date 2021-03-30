@@ -63,7 +63,7 @@ wiz() {
 decorator.fn_parse_all_decorators wiz | hd
 
 " "_find_all_fn should find foo complex args"
-#is err ""
+is err ""
 is out "\
 00000000  3a 78 78 78 3a 00 3a 66  6f 6f 3a 20 61 72 67 31  |:xxx:.:foo: arg1|
 00000010  20 61 72 67 32 00 3a 62  61 72 3a 20 61 31 20 61  | arg2.:bar: a1 a|

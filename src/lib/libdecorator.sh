@@ -1,7 +1,9 @@
 ## Begin libdecorator.sh
 
+include common
 include parse
 include bparse
+include fn
 
 
 ## List all decorated functions

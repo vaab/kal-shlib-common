@@ -1,6 +1,6 @@
 # -*- mode: shell-script -*-
 
-src_file="../src/lib/libcla.sh"
+src_file="../src/lib/libcommon.sh"
 
 prefix_cmd="
 . /etc/shlib

@@ -1,4 +1,6 @@
 
+include common
+
 
 ##
 ## Basic and incomplete bash parser to separate instructions
