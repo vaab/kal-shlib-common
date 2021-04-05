@@ -163,7 +163,7 @@ check_ls_timestyle() {
 }
 
 
-print_bytes () {
+print_bytes() {
     local bytes="$1" float unit_level unit _print_bytes_units
     _print_bytes_units=(byte bytes {K,M,G,T,P,E,Z,Y}iB)
 
@@ -174,6 +174,22 @@ print_bytes () {
     fi
     echo -n "$float $unit"
 }
+
+
+print_duration() {
+    local T=$1 fmt='%d'
+    local H=$((T/60/60%24)) M=$((T/60%60)) S=$((T%60))
+    (( $H > 0 )) && {
+        printf "$fmt:" "$H"
+        fmt='%02d'
+    }
+    (( $M > 0 )) && {
+        printf "$fmt:" "$M"
+        fmt='%02d'
+    }
+    printf "$fmt" "$S"
+}
+
 
 print_bytes_aligned () {
     local bytes="$1" float unit_level unit _print_bytes_units

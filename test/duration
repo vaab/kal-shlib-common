@@ -1,0 +1,42 @@
+# -*- mode: shell-script -*-
+
+src_file=../src/lib/libcommon.sh
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+##
+## prefix
+##
+
+
+try "print_duration 0" "no problem with 0"
+noerror
+is out "0"
+
+
+try "print_duration 23" "simple double digit seconds"
+noerror
+is out "23"
+
+try "print_duration 1" "single digit second without prefix 0"
+noerror
+is out "1"
+
+try "print_duration 60" "60s is 1m"
+noerror
+is out "1:00"
+
+
+try "print_duration 3600" "3600s is 1h"
+noerror
+is out "1:00"
+
+
+try "print_duration $((3 * 3600 + 3 * 60 + 3))" "simple complete example 3:03:03"
+noerror
+is out "3:03:03"
