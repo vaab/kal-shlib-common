@@ -4,7 +4,7 @@ include parse
 include decorators
 
 store() {
-    local scope="$1" store="$2" action="$3"
+    local scope="$1" store="$2" action="$3" fn
     shift 3
     fn=store:$scope:$store:$action
     if fn.exists "$fn"; then
@@ -53,7 +53,7 @@ store:session:vars:del() {
 :state-dir:() {
     if [ -z "$STATE_DIR" ]; then
         settmpdir "STATE_DIR"
-        debug "Setting STATE_DIR to '$state_dir'."
+        debug "Setting STATE_DIR to '$STATE_DIR'."
     fi
 }
 
