@@ -88,10 +88,41 @@ read-0() {
     [ -z "$eof" ]
 }
 
-
-p0() {
-    printf "%s\0" "$@"
+read-0-err() {
+    local ret="$1" eof="" idx=0 last=
+    read -r -- "${ret?}" <<<"0"
+    shift
+    while [ "$1" ]; do
+        last=$idx
+        read -r -d '' -- "$1" || {
+            ## Put this last value in ${!ret}
+            eof="$1"
+            read -r -- "$ret" <<<"${!eof}"
+            break
+        }
+        ((idx++))
+        shift
+    done
+    [ -z "$eof" ] || {
+        if [ "$last" != 0 ]; then
+            echo "Error: read-0-err couldn't fill all value" >&2
+            read -r -- "$ret" <<<"127"
+        else
+            if [ -z "${!ret}" ]; then
+                echo "Error: last value is not a number, did you finish with an errorlevel ?" >&2
+                read -r -- "$ret" <<<"126"
+            fi
+        fi
+        false
+    }
 }
+
+
+p-err() {
+    "$@"
+    echo "$?"
+}
+
 
 read-0a() {
     local eof= IFS=''

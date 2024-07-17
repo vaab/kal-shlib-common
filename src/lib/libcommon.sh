@@ -2,20 +2,29 @@
 
 include color
 
-warn() { echo -en "${YELLOW}Warning:$NORMAL" "$*\n" >&2 ; }
-info() { echo -en "${BLUE}II$NORMAL" "$*\n" >&2 ; }
-verb() { [ -z "$VERBOSE" ] || echo -en "$*\n" >&2; }
-debug() { [ -z "$DEBUG" ] || echo -en "$*\n" >&2; }
-err() { echo -en "${RED}Error:$NORMAL" "$*\n" >&2 ; }
-die() { err "$@" ; exit 1; }
-
+## Much safer than `echo` as it:
+## - doesn't interpret options starting with `-`.
+## - doesn't add a newline at the end of the string.
+## But, always consider using `cmd <<<"$VAR"` instead of `e "$VAR" | cmd`.
 e() { printf "%s" "$*"; }
-p0() {
-    printf "%s\0" "$@"
-}
-H() {
-    p0 "$@" | hash_get
-}
+en() { printf "%s"$'\n' "$*"; }  ## with newline
+
+warn() { echo "${YELLOW}Warning:$NORMAL $*" >&2 ; }
+info() { echo "${BLUE}II$NORMAL $*" >&2 ; }
+verb() { [ -z "$VERBOSE" ] || en "$*" >&2; }
+debug() { [ -z "$DEBUG" ] || en "$*" >&2; }
+err() { echo "${RED}Error:$NORMAL $*" >&2 ; }
+
+die() { err "$@" ; exit 1; }  ## not a fan
+
+p0() { printf "%s\0" "$@"; }
+H() { p0 "$@" | hash_get; }
+
+version:ge() { [ "$(printf '%s\n' "$@" | sort -rV | head -n 1)" == "$1" ]; }
+version:gt() { [ "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1" ]; }
+version:le() { ! version:gt "$@"; }
+version:lt() { ! version:ge "$@"; }
+
 
 ## equivalent of 'xargs echo' with builtins
 nspc() {
