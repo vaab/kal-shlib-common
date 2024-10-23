@@ -123,6 +123,34 @@ read-0-err() {
     }
 }
 
+col-0:normalize:size() {
+  local alignment=$1
+
+  awk -v alignment="$alignment" -v RS='\0' -v ORS='\0' '{
+    nb_col = length(alignment);
+    # Store the entire line in the lines array.
+    lines[NR] = $0;
+
+    if (length($0) > max[NR % nb_col]) {
+       max[NR % nb_col] = length($0);
+    }
+  }
+  END {
+    # Print lines with fields padded to max.
+    for (i = 1; i <= NR; i++) {
+      line = "";
+      # Get alignment for the current field.
+      align = substr(alignment, i % nb_col, 1);
+      if (align == "+") {
+        line = line sprintf("%" max[i % nb_col] "s", lines[i]);  # Right alignment
+      } else {
+        line = line sprintf("%-" max[i % nb_col] "s", lines[i]); # Left alignment
+      }
+      printf "%s\0", line;
+    }
+  }'
+}
+
 
 p-err() {
     "$@"
