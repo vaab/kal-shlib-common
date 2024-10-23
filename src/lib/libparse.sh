@@ -92,12 +92,15 @@ read-0-err() {
     local ret="$1" eof="" idx=0 last=
     read -r -- "${ret?}" <<<"0"
     shift
-    while [ "$1" ]; do
+    while [ -n "$1" ]; do
         last=$idx
-        read -r -d '' -- "$1" || {
+        IFS='' read -r -d '' -- "$1" || {
             ## Put this last value in ${!ret}
             eof="$1"
-            read -r -- "$ret" <<<"${!eof}"
+            # echo "EOF: '$eof'" >&2
+            # echo "EOF: '${!eof}'" >&2
+            read -r -d '' -- "$ret" <<<"${!eof}"
+            # echo "Final ${ret}: '${!ret}'" >&2
             break
         }
         ((idx++))
@@ -109,8 +112,11 @@ read-0-err() {
             read -r -- "$ret" <<<"127"
         else
             if [ -z "${!ret}" ]; then
-                echo "Error: last value is not a number, did you finish with an errorlevel ?" >&2
+                echo "Error: last value is empty, did you finish with an errorlevel ?" >&2
                 read -r -- "$ret" <<<"126"
+            elif ! [[ "${!ret}" =~ ^[0-9]+$ ]]; then
+                echo "Error: last value is not a number (is '${!ret}'), did you finish with an errorlevel ?" >&2
+                read -r -- "$ret" <<<"125"
             fi
         fi
         false

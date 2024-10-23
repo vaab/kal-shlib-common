@@ -1,0 +1,162 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libparse.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+
+## Specs:
+## - As ``read-0`` must be usable in a ``while read-0`` pattern
+##   it should issue an errorlevel 1 when encoutering EOF.
+##   - As a consequence of the ``while read-0`` pattern, and the fact
+##     that 0 sized data is a valid data, we need a terminal NUL char
+##     to validate a data field.
+## - so if EOF without NUL, then the last data is ignored
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | p-err tr : \"\000\"
+a:1:b:2 3:c:4
+  5:d:6\\n7:e::f:9
+EOF
+)
+echo \"var \\\$E: '\$E'\"
+" "Missing complete record (missing final NUL)"
+is errlvl 0
+is err "Error: read-0-err couldn't fill all value" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1'
+E: '0', f1: 'b', f2: '2 3'
+E: '0', f1: 'c', f2: '4
+  5'
+E: '0', f1: 'd', f2: '6\n7'
+E: '0', f1: 'e', f2: ''
+var \$E: '127'
+"
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | tr : \"\000\"
+a:1:b:2 3:c:4
+  5:d:6\\n7:e::f:9
+EOF
+echo 1
+)
+echo \"var \\\$E: '\$E'\"
+" "Missing complete record and generator errlvl 1"
+is errlvl 0
+is err "Error: read-0-err couldn't fill all value" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1'
+E: '0', f1: 'b', f2: '2 3'
+E: '0', f1: 'c', f2: '4
+  5'
+E: '0', f1: 'd', f2: '6\n7'
+E: '0', f1: 'e', f2: ''
+var \$E: '127'
+"
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | tr : \"\000\"
+a:1:b:2 3:c:4
+  5:d:6\\n7:e::f:9:
+EOF
+echo 13
+)
+echo \"var \\\$E: '\$E'\"
+" "complete record and generator errlvl 13"
+is errlvl 0
+is err "" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1'
+E: '0', f1: 'b', f2: '2 3'
+E: '0', f1: 'c', f2: '4
+  5'
+E: '0', f1: 'd', f2: '6\n7'
+E: '0', f1: 'e', f2: ''
+E: '0', f1: 'f', f2: '9'
+var \$E: '13'
+"
+
+
+
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | p-err tr : \"\000\"
+a:1:b:2 3:c:4
+  5:d:6\\n7:e::f:9:
+EOF
+)
+echo \"var \\\$E: '\$E'\"
+" "complete record with generator errlvl 0"
+is errlvl 0
+is err "" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1'
+E: '0', f1: 'b', f2: '2 3'
+E: '0', f1: 'c', f2: '4
+  5'
+E: '0', f1: 'd', f2: '6\n7'
+E: '0', f1: 'e', f2: ''
+E: '0', f1: 'f', f2: '9'
+var \$E: '0'
+"
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | tr : \"\000\"
+a:1:b:2 3:c:4
+  5:d:6\\n7:e::f:9:
+EOF
+)
+echo \"var \\\$E: '\$E'\"
+" "complete record with no errlvl"
+is errlvl 0
+is err "Error: last value is empty, did you finish with an errorlevel ?" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1'
+E: '0', f1: 'b', f2: '2 3'
+E: '0', f1: 'c', f2: '4
+  5'
+E: '0', f1: 'd', f2: '6\n7'
+E: '0', f1: 'e', f2: ''
+E: '0', f1: 'f', f2: '9'
+var \$E: '126'
+"
+
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | tr : \"\000\"
+a:1 :b  :2:  c: 4:
+EOF
+echo 15
+)
+echo \"var \\\$E: '\$E'\"
+" "no trim of spaces"
+is errlvl 0
+is err "" TRIM
+is out "\
+E: '0', f1: 'a', f2: '1 '
+E: '0', f1: 'b  ', f2: '2'
+E: '0', f1: '  c', f2: ' 4'
+var \$E: '15'
+"
