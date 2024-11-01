@@ -1,0 +1,26 @@
+# -*- mode: shell-script -*-
+
+src_file="../src/lib/libparse.sh"
+
+prefix_cmd="
+. /etc/shlib
+
+source '$src_file'
+"
+
+## Specs:
+## - As ``read-0`` must be usable in a ``while read-0`` pattern
+##   it should issue an errorlevel 1 when encoutering EOF.
+##   - As a consequence of the ``while read-0`` pattern, and the fact
+##     that 0 sized data is a valid data, we need a terminal NUL char
+##     to validate a data field.
+## - so if EOF without NUL, then the last data is ignored
+
+try "
+printf '%s\0' 'a' 'b' 'c' 'd' 'xxxx' 'yyyyy' 'zzzzzz' '0000000' | col-0:normalize:size -+++ | tr '\0' ':'
+"
+noerror
+is out "\
+a   :    b:     c:      d:xxxx:yyyyy:zzzzzz:0000000:"
+
+

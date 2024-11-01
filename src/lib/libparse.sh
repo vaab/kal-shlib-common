@@ -140,7 +140,7 @@ col-0:normalize:size() {
     for (i = 1; i <= NR; i++) {
       line = "";
       # Get alignment for the current field.
-      align = substr(alignment, i % nb_col, 1);
+      align = substr(alignment, ((i - 1) % nb_col) + 1, 1);
       if (align == "+") {
         line = line sprintf("%" max[i % nb_col] "s", lines[i]);  # Right alignment
       } else {
