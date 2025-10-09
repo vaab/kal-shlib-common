@@ -191,6 +191,34 @@ is out "\
 var \$E: '17'
 "
 
+try "
+set +e
+errlvl=0
+read-0-err E _ y x < <(p-err false) || errlvl=\$?
+echo \"errlvl: '\$errlvl'\"
+echo \"var \\\$E: '\$E'\"
+" "failure with set +e"
+is errlvl 0
+is err "" TRIM
+is out "\
+errlvl: '1'
+var \$E: '1'
+"
+
+try "
+set -e
+errlvl=0
+read-0-err E _ y x < <(p-err false) || errlvl=\$?  ## protect against set -e
+echo \"errlvl: '\$errlvl'\"
+echo \"var \\\$E: '\$E'\"
+" "failure with set -e"
+is errlvl 0
+is err "" TRIM
+is out "\
+errlvl: '1'
+var \$E: '1'
+"
+
 
 try "
 read-0-err E _ y x < <(

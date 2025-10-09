@@ -162,8 +162,9 @@ col-0:normalize:size() {
 
 
 p-err() {
-    "$@"
-    echo "$?"
+    local errlvl=0
+    "$@" || errlvl=$?   ## protected against `set -e`
+    echo $errlvl
 }
 
 
