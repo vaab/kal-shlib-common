@@ -160,3 +160,89 @@ E: '0', f1: 'b  ', f2: '2'
 E: '0', f1: '  c', f2: ' 4'
 var \$E: '15'
 "
+
+
+try "
+while read-0-err E f1 f2; do
+    echo \"E: '\$E', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | tr : \"\000\"
+EOF
+echo 16
+)
+echo \"var \\\$E: '\$E'\"
+" "no records at all, only return value"
+is errlvl 0
+is err "" TRIM
+is out "\
+var \$E: '16'
+"
+
+
+try "
+read-0-err E f1 f2 f3 < <(
+echo 17
+)
+echo \"var \\\$E: '\$E'\"
+" "no records at all, only return value, no while"
+is errlvl 0
+is err "" TRIM
+is out "\
+var \$E: '17'
+"
+
+
+try "
+read-0-err E _ y x < <(
+echo 17
+)
+echo \"var \\\$E: '\$E'\"
+" "no records at all, only return value, no while, anonymous field"
+is errlvl 0
+is err "" TRIM
+is out "\
+var \$E: '17'
+"
+
+
+
+try "
+while read-0-err E __read_0_err__ret f2; do
+    echo \"E: '\$E', ret: '\$__read_0_err__ret', f2: '\$f2'\"
+done < <(
+cat <<EOF | p-err tr : \"\000\"
+a:1:b:2:
+EOF
+)
+echo errlvl: \$?
+echo \"var \\\$E: '\$E'\"
+" "using reserved word as field name"
+is errlvl 0
+is err "\
+Error: read-0-err can't use reserved var name '__read_0_err__ret' as var name
+"
+is out "\
+errlvl: 0
+var \$E: '124'
+"
+
+
+try "
+while read-0-err __read_0_err__ret f1 f2; do
+    echo \"__read_0_err__ret: '\$__read_0_err__ret', f1: '\$f1', f2: '\$f2'\"
+done < <(
+cat <<EOF | p-err tr : \"\000\"
+a:1:b:2:
+EOF
+)
+echo errlvl: \$?
+echo \"var \\\$__read_0_err__ret: '\$__read_0_err__ret'\"
+" "using reserved word as field name"
+is errlvl 0
+is err "\
+Error: read-0-err can't use reserved var name '__read_0_err__ret' as return var name
+"
+is out "\
+errlvl: 0
+var \$__read_0_err__ret: ''
+"

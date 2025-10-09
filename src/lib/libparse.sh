@@ -88,35 +88,44 @@ read-0() {
     [ -z "$eof" ]
 }
 
+
 read-0-err() {
-    local ret="$1" eof="" idx=0 last=
-    read -r -- "${ret?}" <<<"0"
+    local __read_0_err__ret="$1" __read_0_err__eof="" __read_0_err__idx=0 __read_0_err__last= __read_0_err__varname
+    if [[ "$__read_0_err__ret" == "__read_0_err__"* ]]; then
+        echo "Error: read-0-err can't use reserved var name '$__read_0_err__ret' as return var name" >&2
+        return 123
+    fi
+    read -r -- "${__read_0_err__ret?}" <<<"0"
     shift
     while [ -n "$1" ]; do
-        last=$idx
-        IFS='' read -r -d '' -- "$1" || {
+        __read_0_err__varname="$1"
+        if [[ "$__read_0_err__varname" == "__read_0_err__"* ]]; then
+            echo "Error: read-0-err can't use reserved var name '$__read_0_err__varname' as var name" >&2
+            read -r -- "$__read_0_err__ret" <<<"124"
+            return 123
+        fi
+        [ "$__read_0_err__varname" == "_" ] && __read_0_err__varname="__read_0_err__anonymous"
+        __read_0_err__last=$__read_0_err__idx
+        IFS='' read -r -d '' -- "$__read_0_err__varname" || {
             ## Put this last value in ${!ret}
-            eof="$1"
-            # echo "EOF: '$eof'" >&2
-            # echo "EOF: '${!eof}'" >&2
-            read -r -d '' -- "$ret" <<<"${!eof}"
-            # echo "Final ${ret}: '${!ret}'" >&2
+            __read_0_err__eof="$__read_0_err__varname"
+            read -r -d '' -- "$__read_0_err__ret" <<<"${!__read_0_err__eof}"
             break
         }
-        ((idx++))
+        ((__read_0_err__idx++))
         shift
     done
-    [ -z "$eof" ] || {
-        if [ "$last" != 0 ]; then
+    [ -z "$__read_0_err__eof" ] || {
+        if [ "$__read_0_err__last" != 0 ]; then
             echo "Error: read-0-err couldn't fill all value" >&2
-            read -r -- "$ret" <<<"127"
+            read -r -- "$__read_0_err__ret" <<<"127"
         else
-            if [ -z "${!ret}" ]; then
+            if [ -z "${!__read_0_err__ret}" ]; then
                 echo "Error: last value is empty, did you finish with an errorlevel ?" >&2
-                read -r -- "$ret" <<<"126"
-            elif ! [[ "${!ret}" =~ ^[0-9]+$ ]]; then
-                echo "Error: last value is not a number (is '${!ret}'), did you finish with an errorlevel ?" >&2
-                read -r -- "$ret" <<<"125"
+                read -r -- "$__read_0_err__ret" <<<"126"
+            elif ! [[ "${!__read_0_err__ret}" =~ ^[0-9]+$ ]]; then
+                echo "Error: last value is not a number (is '${!__read_0_err__ret}'), did you finish with an errorlevel ?" >&2
+                read -r -- "$__read_0_err__ret" <<<"125"
             fi
         fi
         false
