@@ -28,6 +28,12 @@ AC_SUBST(AUTHOR)
 CR_DATE="esyscmd(. pkg/licence && echo -n $licence_date)"
 AC_SUBST(CR_DATE)
 
+MAJOR_VERSION="$(./autogen.sh --get-version | cut -f 1,2 -d . )"
+AC_SUBST(MAJOR_VERSION)
+SHLIB_PACKAGE_NAME="$(./autogen.sh --get-name | cut -f 3- -d - )"
+AC_SUBST(SHLIB_PACKAGE_NAME)
+
+
 dnl EXE_NAME=""
 dnl AC_SUBST(EXE_NAME)
 
